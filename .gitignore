@@ -12,5 +12,6 @@ share/*
 share
 lib64/*
 lib64
-# oops i forgot this one
 errors_given.log
+pyvenv.cfg
+
