@@ -1,3 +1,15 @@
 # COMPILED PYTHON FILES
 *.pyc
 
+# VIRTUAL ENVIRONMENT FOLDERS
+bin/*
+bin
+lib/*
+lib
+include/*
+include
+share/*
+share
+lib64/*
+lib64
+

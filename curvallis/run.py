@@ -184,7 +184,7 @@ class CurveInteractor(object):
         self._register_callbacks()
         # Create rectangle selector for selecting multiple points
         self._selector = widgets.RectangleSelector(self._ax, self.line_select_callback,
-                                                   drawtype='box', useblit=True,
+                                                   useblit=True, # drawtype is deprecated and is set to 'box' by default
                                                    button=[1, 3],  # don't use middle button
                                                    spancoords='pixels')
         self._selector.set_active(False)
@@ -573,7 +573,7 @@ class CurveInteractor(object):
         self._canvas.mpl_connect('button_release_event', self.button_release_callback)
         self._canvas.mpl_connect('motion_notify_event', self.motion_notify_callback)
         self._canvas.mpl_connect('key_press_event', self.key_press_callback)
-        self._canvas.mpl_connect('line_select_event', self.line_select_callback)
+#       self._canvas.mpl_connect('line_select_event', self.line_select_callback)
         self._xlim_callback_id = self._ax.callbacks.connect(
             'xlim_changed', self.xlim_changed_callback)
 

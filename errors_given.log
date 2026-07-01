@@ -1,0 +1,51 @@
+/home/william/Develop/python/Curvallis/examples/1dexample1.ini
+Current directory is "/home/william/Develop/python/Curvallis/examples"
+Reading data from "1dexample1.dat"
+Lines read: 154
+---------------------------------------------------------------
+input points: 1dexample1.dat:
+Number of points: 153
+X range: 1.000000000000000E-10 .. 1.000000000000000E+04
+Y range: -2.333203892760288E-01 .. 1.101335000000000E+07
+---------------------------------------------------------------
+Current directory is "/home/william/Develop/python/Curvallis/examples"
+Reading data from "1dexample1.dat"
+Lines read: 154
+---------------------------------------------------------------
+background_points0: background points0:
+Number of points: 153
+X range: 1.000000000000000E-10 .. 1.000000000000000E+04
+Y range: -2.333203892760288E-01 .. 1.101335000000000E+07
+---------------------------------------------------------------
+Creating region 0 for X range 1.000000000000000E-10 .. 1.000000000000000E+04
+REGION "0" INFO:
+    X Range: 1.000000000000000E-10 .. 1.000000000000000E+04
+    Line sets count: 1
+        Line set "1dexample1.dat":            Name: "1dexample1.dat"
+            Point Count: 153
+
+Approximate Fit (No ghost points yet):
+Calculated polynomial is:
+-1.878E-13 * x**5 +4.362E-09 * x**4 -3.747E-05 * x**3 +2.364E-01 * x**2 +2.752E-04 * x**1 +2.562E-07
+
+regions:
+Calculated polynomial is:
+-1.878E-13 * x**5 +4.362E-09 * x**4 -3.747E-05 * x**3 +2.364E-01 * x**2 +2.752E-04 * x**1 +2.562E-07
+
+Traceback (most recent call last):
+  File "/home/william/Develop/python/Curvallis/examples/../curvallis.py", line 18, in <module>
+    main()
+  File "/home/william/Develop/python/Curvallis/curvallis/run.py", line 840, in main
+    CurveInteractor().run()
+  File "/home/william/Develop/python/Curvallis/curvallis/run.py", line 184, in run
+    self._register_callbacks()
+  File "/home/william/Develop/python/Curvallis/curvallis/run.py", line 576, in _register_callbacks
+    self._canvas.mpl_connect('line_select_event', self.line_select_callback)
+  File "/usr/lib/python3/dist-packages/matplotlib/backend_bases.py", line 2448, in mpl_connect
+    return self.callbacks.connect(s, func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/matplotlib/cbook/__init__.py", line 227, in connect
+    _api.check_in_list(self._signals, signal=signal)
+  File "/usr/lib/python3/dist-packages/matplotlib/_api/__init__.py", line 131, in check_in_list
+    raise ValueError(msg)
+ValueError: 'line_select_event' is not a valid value for signal; supported values are 'resize_event', 'draw_event', 'key_press_event', 'key_release_event', 'button_press_event', 'button_release_event', 'scroll_event', 'motion_notify_event', 'pick_event', 'figure_enter_event', 'figure_leave_event', 'axes_enter_event', 'axes_leave_event', 'close_event'
