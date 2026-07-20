@@ -549,7 +549,8 @@ class CurveInteractor(object):
         self._plot_icurves()
         self._canvas.draw()
 
-    def line_select_callback(self, eclick, erelease):
+    # NOTE: This function needs to exist for other purposes, and it's non-inclusion in the _register_callbacks function is intentional
+    def line_select_callback(self, eclick, erelease): # William: Huh, so this DOES in fact need to exist for block select functionality.
         """Press and release events for block selecting.
         """
         x1, y1 = eclick.xdata, eclick.ydata
@@ -573,7 +574,6 @@ class CurveInteractor(object):
         self._canvas.mpl_connect('button_release_event', self.button_release_callback)
         self._canvas.mpl_connect('motion_notify_event', self.motion_notify_callback)
         self._canvas.mpl_connect('key_press_event', self.key_press_callback)
-#       self._canvas.mpl_connect('line_select_event', self.line_select_callback)
         self._xlim_callback_id = self._ax.callbacks.connect(
             'xlim_changed', self.xlim_changed_callback)
 
