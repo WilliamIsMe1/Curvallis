@@ -183,7 +183,7 @@ class CurveInteractor(object):
             io_manager=self._io_manager)
         self._register_callbacks()
         # Create rectangle selector for selecting multiple points
-        self._selector = widgets.RectangleSelector(self._ax, self.line_select_callback,
+        self._selector = widgets.RectangleSelector(self._ax, self.process_line_select,
                                                    useblit=True, # drawtype is deprecated and is set to 'box' by default
                                                    button=[1, 3],  # don't use middle button
                                                    spancoords='pixels')
@@ -527,16 +527,15 @@ class CurveInteractor(object):
                     self._figure_padding = 0
                 self._figure.tight_layout(pad=self._figure_padding)
                 self._canvas.draw()
-            """ Currently broken
             elif event.key == 'delete':  # If "delete" pressed
                 if (self._move_set == True):
                     print("Block Delete Points.")
-                    self._regions._remove_points(event, self._xmin, self._xmax, self._ymin, self._ymax)
+                    print(type(self._regions))
+                    self._regions._remove_points(event, self._xmin, self._xmax, self._ymin, self._ymax) # here is the problem
                     self._draw()
                     #self._attempt_begin_move_point(event)
                 else:
                     print("Block selection is not enabled.")
-            """
 
     def xlim_changed_callback(self, event):
         """ xlim is changed by a zoom or a pan
@@ -550,7 +549,7 @@ class CurveInteractor(object):
         self._canvas.draw()
 
     # NOTE: This function needs to exist for other purposes, and it's non-inclusion in the _register_callbacks function is intentional
-    def line_select_callback(self, eclick, erelease): # William: Huh, so this DOES in fact need to exist for block select functionality.
+    def process_line_select(self, eclick, erelease):
         """Press and release events for block selecting.
         """
         x1, y1 = eclick.xdata, eclick.ydata

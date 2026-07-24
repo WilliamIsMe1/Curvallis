@@ -699,7 +699,7 @@ class _Line_Sets(object):
     def move_point_in_progress(self):
         return self._moving_point_set_name is not None
 
-    def add_point(self, event):
+    def add_point(self, event): 
         # FIX: Will add point to every line if more than one
         # Currently disabled for 2d plots
         for name, line_set in self._sets.items():
@@ -712,7 +712,7 @@ class _Line_Sets(object):
             line_set.remove_point(event)
 
     # Function currently broken
-    def remove_points(self, event, xmin, xmax, ymin, ymax):
+    def remove_points(self, event, xmin, xmax, ymin, ymax): # MARKER Line 715 debug here next
         # FIX: Will try to remove point from every line if more than one
         # Currently disabled for 2d plots
         for name, line_set in self._sets.items():
