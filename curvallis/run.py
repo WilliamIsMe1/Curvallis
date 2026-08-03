@@ -309,7 +309,7 @@ class CurveInteractor(object):
         if self._background_data_sets.num_sets() > 0:
             # Plot each background data line
             for back_set in self._background_data_sets.get_set_values():
-                if len(back_set) > 0:
+                if (len(back_set) > 0):
                     self._background_line.append(
                         lines.Line(self._ax, lines.line_attributes['background_points']))
                     self._background_line[-1].plot_xy_data(back_set)
