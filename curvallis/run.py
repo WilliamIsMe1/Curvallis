@@ -527,8 +527,8 @@ class CurveInteractor(object):
                     self._figure_padding = 0
                 self._figure.tight_layout(pad=self._figure_padding)
                 self._canvas.draw()
-            elif event.key == 'delete':  # If "delete" pressed
-                if (self._move_set == True):
+            elif event.key == 'delete' or event.key == 'backspace':  # If "delete" pressed
+                if self._move_set: # if self._move_set == True
                     print("Block Delete Points.")
                     print(type(self._regions))
                     self._regions._remove_points(event, self._xmin, self._xmax, self._ymin, self._ymax) # here is the problem

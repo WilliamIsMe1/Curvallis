@@ -1519,7 +1519,6 @@ class Regions(object):
         event.y = (ymin + ymax) / 2
         region_index = self.get_region_index(event.x, event.y)
         region = self._regions[region_index]
-        print("x/y range: (" + str(xmin) + " " + str(xmax) + "), ( " + str(ymin) + " " + str(ymax) + ")")
         region.remove_points(event, xmin, xmax, ymin, ymax)
         # Redraw fit curve
         self._moving_set_region_index = region_index

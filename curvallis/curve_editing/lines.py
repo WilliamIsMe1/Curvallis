@@ -529,14 +529,13 @@ class Line_Set(object):
 
         for i in range(len(display_points)):
             print(display_points[i])
-            print(str(xmin) + " to " + str(xmax) + " and " + str(ymin) + " to " + str(ymax))
-            if((xmin <= data_points[i][0] <= xmax) and (ymin <= data_points[i][1] <= ymax)):
+            if (xmin <= data_points[i][0] <= xmax) and (ymin <= data_points[i][1] <= ymax):
                 print("XY match: " + str(display_points[i]))
                 remove_points_indices.append(i)
-            elif ((xmin <= data_points[i][0] <= xmax)):
+            elif xmin <= data_points[i][0] <= xmax:
                 print("X match: " + str(display_points[i]))
         print("Deleting " + str(len(remove_points_indices)) + " points.")
-        for i in range(len(remove_points_indices)-1, 0, -1):
+        for i in range(len(remove_points_indices)-1, -1, -1): # Change the middle parameter to -1 so that the "upper limit " is zero inclusive. Why did it count backwards??
             data_points.remove(data_points[remove_points_indices[i]])
         self.movable.set_xy_data(data_points)
 
