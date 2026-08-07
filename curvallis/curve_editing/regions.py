@@ -711,8 +711,7 @@ class _Line_Sets(object):
         for name, line_set in self._sets.items():
             line_set.remove_point(event)
 
-    # Function currently broken
-    def remove_points(self, event, xmin, xmax, ymin, ymax): # MARKER Line 715 debug here next
+    def remove_points(self, event, xmin, xmax, ymin, ymax):
         # FIX: Will try to remove point from every line if more than one
         # Currently disabled for 2d plots
         for name, line_set in self._sets.items():

@@ -515,15 +515,10 @@ class Line_Set(object):
         else:
             return
 
-    # Function currently even more broken
-    def remove_points(self, event, xmin, xmax, ymin, ymax): # MARKER Line 519 LOOK HERE
+    def remove_points(self, event, xmin, xmax, ymin, ymax): # Function fixed now
 
         data_points = self.movable.get_xy_data()
-        print(type(data_points))
-        print(len(data_points))
         display_points = self.movable.points_to_display_space(data_points)
-        print(type(display_points))
-        print(len(display_points))
         x_values, y_values = display_points[:,0], display_points[:,1]
         remove_points_indices = []
 

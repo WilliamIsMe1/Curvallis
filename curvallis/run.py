@@ -548,7 +548,6 @@ class CurveInteractor(object):
         self._plot_icurves()
         self._canvas.draw()
 
-    # NOTE: This function needs to exist for other purposes, and it's non-inclusion in the _register_callbacks function is intentional
     def process_line_select(self, eclick, erelease):
         """Press and release events for block selecting.
         """
