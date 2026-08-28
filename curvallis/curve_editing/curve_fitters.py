@@ -891,21 +891,21 @@ class Ali_AP2(Pressure_Fit_Class):
         global global_A
         global global_Z
         (k0, k0_prime, rho0) = coeffs
-        v0 = 1/rho0
-        atomicV0 = v0 * (global_A/0.602214179)
+        v0 = 1/rho0 # ambient volume
+        atomicV0 = v0 * (global_A/0.602214179) # atomic volume (Magic constant is a base 10 shifted version of Avogadro's number)
 
-        x = np.power(rho0/rho, 1./3.);
+        x = np.power(rho0/rho, 1./3.) # Cubic root of (ambient density divided by density)
         aFG = 0.02337E-25
         A3_TO_CM3 = 1e-24
-        pFGr = aFG * np.power(global_Z / (atomicV0 * A3_TO_CM3), 5./3.);
+        pFGr = aFG * np.power(global_Z / (atomicV0 * A3_TO_CM3), 5./3.)
 
-        c0 = -1. * np.log(3. * k0/pFGr);
-        cAP2 = (3./2.) * (k0_prime - 3) - c0;
-        Pc_frac = (3 * k0 * (1-x)) / np.power(x, 5); 
-        Pc_exp  = np.exp(c0 * (1-x)) * (1 + cAP2 * x * (1-x));
-        Pc = Pc_frac * Pc_exp;
+        c0 = -1. * np.log(3. * k0/pFGr)
+        cAP2 = (3./2.) * (k0_prime - 3) - c0
+        Pc_frac = (3 * k0 * (1-x)) / np.power(x, 5)
+        Pc_exp  = np.exp(c0 * (1-x)) * (1 + cAP2 * x * (1-x))
+        Pc = Pc_frac * Pc_exp
 
-        return Pc;
+        return Pc
         
 
     def _derivative(self, x):
@@ -991,28 +991,28 @@ class E_Ali_AP2(Energy_Fit_Class):
     def _f(rho, *coeffs):
         global global_A
         global global_Z
-        (k0, k0_prime, rho0, e0) = coeffs
-        v0 = 1/rho0
-        atomicV0 = v0 * (global_A/0.602214179)
-        x = np.power(rho0/rho, 1./3.);
+        (k0, k0_prime, rho0, e0) = coeffs  # rho0 is ambient density
+        v0 = 1/rho0 # Volume at ambient density
+        atomicV0 = v0 * (global_A/0.602214179) # TODO find purpose of magic constant
+        x = np.power(rho0/rho, 1./3.)
         aFG = 0.02337E-25
         A3_TO_CM3 = 1e-24
-        pFGr = aFG * np.power(global_Z / (atomicV0 * A3_TO_CM3), 5./3.);
-        c0 = -1. * np.log(3. * k0/pFGr);
-        cAP2 = (3./2.) * (k0_prime - 3) - c0;
+        pFGr = aFG * np.power(global_Z / (atomicV0 * A3_TO_CM3), 5./3.)
+        c0 = -1. * np.log(3. * k0/pFGr)
+        cAP2 = (3./2.) * (k0_prime - 3) - c0
 
-        D2 = (cAP2 * (2. - x)) / c0;
-        S2 = (cAP2 * (c0 + 2.)) / c0;
+        D2 = (cAP2 * (2. - x)) / c0
+        S2 = (cAP2 * (c0 + 2.)) / c0
 
-        mm = x*c0;
-        mei_top = np.power(mm, 2) + 2.334733 * mm + 0.250621;
-        mei_bot = np.power(mm, 2) + 3.330657 * mm + 1.681534;
-        mei = mei_top / mei_bot;
+        mm = x*c0
+        mei_top = np.power(mm, 2) + 2.334733 * mm + 0.250621
+        mei_bot = np.power(mm, 2) + 3.330657 * mm + 1.681534
+        mei = mei_top / mei_bot
      
-        E1_top = (9. * v0 * k0) * np.exp(c0 * (1-x)); 
-        E1_bot = (2. * np.power(x , 2));   
-        E2 = 1 - (c0 + 2 - (2. * S2)) * x * (1-mei) - (2. * x * D2);
-        E = (E1_top / E1_bot) * E2;
+        E1_top = (9. * v0 * k0) * np.exp(c0 * (1-x))
+        E1_bot = (2. * np.power(x , 2))
+        E2 = 1 - (c0 + 2 - (2. * S2)) * x * (1-mei) - (2. * x * D2)
+        E = (E1_top / E1_bot) * E2
 
         #This is a dodgy little trick to get around the fact that the AP2 paper
         #and MEOS disagree on the meaning of E0. This moves the E0 to match the MEOS
