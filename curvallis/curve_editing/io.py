@@ -294,7 +294,7 @@ def process_args (parser, args):
             be forced to enter the constant "rho0" instead of
             Curvallis gussing it.
         """
-        r = re.compile('('+'|'.join([cf.GammaPoly.name_prefix, cf.GammaPolyV.name_prefix])+')\d+')
+        r = re.compile('('+'|'.join([cf.GammaPoly.name_prefix, cf.GammaPolyV.name_prefix])+')\\d+')
         if args.rho0 is None and ("sandiapc" in args.fit_type or list(filter(r.match, args.fit_type))):
             parser.error('If using fitter "sandiapc", "{0}", or "{1}", you must give a value for "rho0_guess".'.format(
                 cf.GammaPoly.name_prefix, cf.GammaPolyV.name_prefix))
@@ -371,6 +371,7 @@ class Data_Sets(object):
     is a list of x,y tuples.
     """
     # TODO: Is a data set [[x1,y1], [x2,y2]] or [[x1,x2], [y1,y2]]?
+    # NOTE: First option includes more arrays, causing more memory usage. Second one is more memory efficient, using only three arrays #1[#2[x1, x2, x3], #3[y1, y2, y3]]. Users and programmers should use 2nd option.
     def __init__(self):
         self._sets = {}
         self._all_sets_xy_limits = XY_Limits()

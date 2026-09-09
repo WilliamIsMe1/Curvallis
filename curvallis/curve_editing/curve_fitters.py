@@ -10,6 +10,127 @@
 # Please also Curvallis/LICENSE.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# WARNING Claude pasted checklist here. Claude had somethin g to say about the energy integrals.
+
+# ==============================================================================
+# TODO: UNIMPLEMENTED DERIVATIVE / INTEGRAL CHECKLIST
+# ==============================================================================
+# NOTE: Poly_Original (poly*) and GammaPoly/GammaPolyV (gammapoly*) are NOT
+# included below -- they use np.polyder/np.polyint on a fitted numerical
+# polynomial and already work correctly. No calculus research needed there.
+#
+# GENERAL CAUTION: before writing _energy_integral / _pressure_integral for
+# any pressure-based fitter, confirm the convention against a working example
+# (e.g. Birch_Murnaghan3). Energy integral looks like it comes from
+# dE = -P dV = P/rho^2 drho (thermodynamic relation, V=1/rho). Pressure
+# integral appears to be a plain integral of P(rho) drho, not the same thing.
+# Don't assume -- verify against the existing working pairs first.
+# ==============================================================================
+
+# --- SECOND DERIVATIVE ONLY (straight calculus on the existing _derivative) --
+# [ ] Birch_Murnaghan3   (birch3)   -- d/dx of existing _derivative(x)
+# [ ] Birch_Murnaghan4   (birch4)   -- d/dx of existing _derivative(x)
+# [ ] Vinet              (vinet)    -- d/dx of existing _derivative(x)
+# [ ] Murnaghan          (murnaghan)-- d/dx of existing _derivative(x)
+# [ ] Anton_Schmidt      (anton)    -- d/dx of existing _derivative(x)
+# [ ] Bardeen            (bardeen)  -- d/dx of existing _derivative(x)
+# [ ] Birch_Murnaghan2   (birch2)   -- d/dx of existing _derivative(x)
+# [ ] Johnson_Holmquist  (johnson)  -- d/dx of existing _derivative(x)
+# [ ] Kumari_Dass        (kumari)   -- d/dx of existing _derivative(x)
+# [ ] Logarithmic2       (log2)     -- d/dx of existing _derivative(x)
+# [ ] Logarithmic3       (log)      -- d/dx of existing _derivative(x)
+# [ ] Shankar            (shank)    -- d/dx of existing _derivative(x)
+#     -> No new sources needed. Differentiate the already-correct
+#        _derivative() expression by hand or with sympy/Wolfram Alpha.
+
+# --- SECOND DERIVATIVE + ENERGY INTEGRAL (pressure integral already done) ---
+# [ ] Broken_Ap1 (broken_ap1)
+#     -> Holzapfel, "Equations of state for regular solids,"
+#        High Pressure Research 22(1), 209-216 (2002)
+#     -> Look for the AP1 cold-energy (Fcold) form; pressure integral already
+#        uses scipy.special.expi, energy integral likely needs it too.
+
+# --- FULLY UNIMPLEMENTED (derivative, 2nd derivative, both integrals) ------
+# [ ] Ali_AP2 (AP2)
+#     -> Holzapfel, High Pressure Research 16, 81-126 (1998); Suzanne Ali's
+#        MEOS formulation (cited in docstring). Differentiate the existing
+#        _f() directly for _derivative -- it's already coded correctly.
+#
+# [ ] E_Ali_AP2 (eAP2)
+#     -> Same source as above, energy form. Differentiate existing _f().
+#        Watch the E(rho0) recursive-call trick in _f -- it complicates
+#        symbolic differentiation, may need to differentiate before that
+#        offset is applied.
+#
+# [ ] Broken_Ap2 (broken_ap2)  **FIX BEFORE IMPLEMENTING**
+#     -> Jun Jiuxun et al., "Equation of state for solids with high accuracy
+#        and satisfying the limitation condition at high pressure,"
+#        Physica B 371, 257-271 (2006)
+#     -> BUG: __init__ calls super(Ap2, ...) instead of super(Broken_Ap2, ...)
+#     -> BUG: _c1(x, k0, z) / _c2(x, k0, k0_prime, z) called with wrong
+#        argument order vs. their definitions earlier in the file
+#     -> _f() itself needs fixing/verifying against the paper before any
+#        derivative work starts. Docstring literally says "very complicated."
+#
+# [ ] SandiaPC (sandiapc)
+#     -> No external source cited (in-house Sandia fit). _derivative is
+#        already implemented -- second_derivative and both integrals are
+#        just power-rule calculus on the eta-polynomial in _f(). Straight-
+#        forward once the energy-vs-pressure integral convention (see note
+#        at top) is settled.
+#
+# [ ] EBirch_Murnaghan3 (ebirch3)
+#     -> Energy form of Birch-Murnaghan 3rd order (see birch3 source above).
+#        Search: "Birch-Murnaghan cold energy Fcold formulation"
+#
+# [ ] EBirch_Murnaghan4 (ebirch4)
+#     -> Energy form of Birch-Murnaghan 4th order (see birch4 source above).
+#
+# [ ] EMurnaghan (emurnaghan)
+#     -> Energy form of Murnaghan EOS (see murnaghan source above).
+#
+# [ ] ESeries (eseries)
+#     -> Generic power series in strain; no external EOS paper needed --
+#        this is a Taylor-series-style fit. Differentiate/integrate the
+#        power series term-by-term (straightforward, just tedious with
+#        the variable order 4-12).
+#
+# [ ] EVinet (evinet)
+#     -> Energy form of Vinet EOS (see vinet source above).
+#
+# [ ] EHighP (highp)
+#     -> Used as a refine_fit type for energy Birch-Murnaghan corrections.
+#        No separate paper found in file; check MEOS docs/source for the
+#        intended meaning of c1-c4 here before deriving.
+#
+# [ ] ThetaBP (thetabp)
+#     -> Burakovsky & Preston, "Analytic model of the Grüneisen parameter at
+#        all densities," J. Phys. Chem. Solids 65, 1581 (2004)
+#     -> CHECK: existing _derivative() doesn't look like it matches d(theta)/
+#        drho from _f() -- verify/rederive before trusting it.
+#     -> _energy_integral / _pressure_integral may not be physically
+#        meaningful for a temperature-vs-density curve -- confirm intended
+#        use with whoever maintains MEOS before implementing.
+#
+# [ ] GammaRho (gammaRho)
+# [ ] GammaV (gammaV)
+#     -> NO SOURCE CITED in file ("Reference?"). Search: "Gruneisen
+#        parameter density dependence c1 c2 q model" or check MEOS
+#        source/docs directly -- this may be an in-house formula with no
+#        published reference.
+#
+# [ ] SimonGlatzel (simong)
+#     -> Simon, F.E., Nature 172, 746 (1953), DOI 10.1038/172746a0, eq. 1
+#     -> This is a melting curve T(P), not a density-based EOS. "Energy
+#        integral" / "pressure integral" as concepts may not apply --
+#        determine what these should even return before implementing, or
+#        confirm they should stay NotImplementedError permanently.
+#
+# [ ] SimonGlatzelExtension (simongexp)
+#     -> Kechin, V.V., J. Phys.: Condens. Matter 7, 531-535 (1995)
+#     -> Same caveat as SimonGlatzel above re: integral semantics.
+# ==============================================================================
+
 """This module holds the various curve-fitting methods used by curve_editor.py
 """
 
@@ -551,6 +672,17 @@ class Pressure_Fit_Class(Base_Fit_Class):
               self.k0_prime, self.rho0)
 
         self._is_first_fit = False
+    def _derivative(self, x): # By pasting, it is now possible to simply grep for unfinished classes.
+        raise RuntimeError("NOT YET IMPLEMENTED")
+
+    def _second_derivative(self, x):
+        raise RuntimeError("NOT YET IMPLEMENTED")
+
+    def _energy_integral(self, x):
+        raise RuntimeError("NOT YET IMPLEMENTED")
+
+    def _pressure_integral(self, x):
+        raise RuntimeError("NOT YET IMPLEMENTED")
 
 
 class Energy_Fit_Class(Base_Fit_Class):
@@ -599,7 +731,7 @@ class Energy_Fit_Class(Base_Fit_Class):
                 start_idx = 0
             end_idx = min_point_index + 10
             if (end_idx > len(points)):
-                end_idx = len_points
+                end_idx = len(points)
             parabola_points.extend(points[start_idx:end_idx])
 
         # Use the points around rho0 to fit a parabola to guess
@@ -634,6 +766,17 @@ class Energy_Fit_Class(Base_Fit_Class):
               self.k0_prime, self.rho0)
 
         self._is_first_fit = False
+    def _derivative(self, x):
+        raise RuntimeError("NOT YET IMPLEMENTED")
+
+    def _second_derivative(self, x):
+        raise RuntimeError("NOT YET IMPLEMENTED")
+
+    def _energy_integral(self, x):
+        raise RuntimeError("NOT YET IMPLEMENTED")
+
+    def _pressure_integral(self, x):
+        raise RuntimeError("NOT YET IMPLEMENTED")
 
 # ------------------------------------------------------------------------------
 # EOS models tested against MEOS Equations
@@ -748,21 +891,21 @@ class Ali_AP2(Pressure_Fit_Class):
         global global_A
         global global_Z
         (k0, k0_prime, rho0) = coeffs
-        v0 = 1/rho0
-        atomicV0 = v0 * (global_A/0.602214179)
+        v0 = 1/rho0 # ambient volume
+        atomicV0 = v0 * (global_A/0.602214179) # atomic volume (Magic constant is a base 10 shifted version of Avogadro's number)
 
-        x = np.power(rho0/rho, 1./3.);
+        x = np.power(rho0/rho, 1./3.) # Cubic root of (ambient density divided by density)
         aFG = 0.02337E-25
         A3_TO_CM3 = 1e-24
-        pFGr = aFG * np.power(global_Z / (atomicV0 * A3_TO_CM3), 5./3.);
+        pFGr = aFG * np.power(global_Z / (atomicV0 * A3_TO_CM3), 5./3.)
 
-        c0 = -1. * np.log(3. * k0/pFGr);
-        cAP2 = (3./2.) * (k0_prime - 3) - c0;
-        Pc_frac = (3 * k0 * (1-x)) / np.power(x, 5); 
-        Pc_exp  = np.exp(c0 * (1-x)) * (1 + cAP2 * x * (1-x));
-        Pc = Pc_frac * Pc_exp;
+        c0 = -1. * np.log(3. * k0/pFGr)
+        cAP2 = (3./2.) * (k0_prime - 3) - c0
+        Pc_frac = (3 * k0 * (1-x)) / np.power(x, 5)
+        Pc_exp  = np.exp(c0 * (1-x)) * (1 + cAP2 * x * (1-x))
+        Pc = Pc_frac * Pc_exp
 
-        return Pc;
+        return Pc
         
 
     def _derivative(self, x):
@@ -848,28 +991,28 @@ class E_Ali_AP2(Energy_Fit_Class):
     def _f(rho, *coeffs):
         global global_A
         global global_Z
-        (k0, k0_prime, rho0, e0) = coeffs
-        v0 = 1/rho0
-        atomicV0 = v0 * (global_A/0.602214179)
-        x = np.power(rho0/rho, 1./3.);
+        (k0, k0_prime, rho0, e0) = coeffs  # rho0 is ambient density
+        v0 = 1/rho0 # Volume at ambient density
+        atomicV0 = v0 * (global_A/0.602214179) # TODO find purpose of magic constant
+        x = np.power(rho0/rho, 1./3.)
         aFG = 0.02337E-25
         A3_TO_CM3 = 1e-24
-        pFGr = aFG * np.power(global_Z / (atomicV0 * A3_TO_CM3), 5./3.);
-        c0 = -1. * np.log(3. * k0/pFGr);
-        cAP2 = (3./2.) * (k0_prime - 3) - c0;
+        pFGr = aFG * np.power(global_Z / (atomicV0 * A3_TO_CM3), 5./3.)
+        c0 = -1. * np.log(3. * k0/pFGr)
+        cAP2 = (3./2.) * (k0_prime - 3) - c0
 
-        D2 = (cAP2 * (2. - x)) / c0;
-        S2 = (cAP2 * (c0 + 2.)) / c0;
+        D2 = (cAP2 * (2. - x)) / c0
+        S2 = (cAP2 * (c0 + 2.)) / c0
 
-        mm = x*c0;
-        mei_top = np.power(mm, 2) + 2.334733 * mm + 0.250621;
-        mei_bot = np.power(mm, 2) + 3.330657 * mm + 1.681534;
-        mei = mei_top / mei_bot;
+        mm = x*c0
+        mei_top = np.power(mm, 2) + 2.334733 * mm + 0.250621
+        mei_bot = np.power(mm, 2) + 3.330657 * mm + 1.681534
+        mei = mei_top / mei_bot
      
-        E1_top = (9. * v0 * k0) * np.exp(c0 * (1-x)); 
-        E1_bot = (2. * np.power(x , 2));   
-        E2 = 1 - (c0 + 2 - (2. * S2)) * x * (1-mei) - (2. * x * D2);
-        E = (E1_top / E1_bot) * E2;
+        E1_top = (9. * v0 * k0) * np.exp(c0 * (1-x))
+        E1_bot = (2. * np.power(x , 2))
+        E2 = 1 - (c0 + 2 - (2. * S2)) * x * (1-mei) - (2. * x * D2)
+        E = (E1_top / E1_bot) * E2
 
         #This is a dodgy little trick to get around the fact that the AP2 paper
         #and MEOS disagree on the meaning of E0. This moves the E0 to match the MEOS
@@ -1163,7 +1306,7 @@ class Murnaghan(Pressure_Fit_Class):
                (np.power(_rno_norm(x, rho0), k0_prime) - 1.0)
 
     def _derivative(self, x):
-        # noinspection PyTypeChecker
+        # noinspection PyTypeCheckerr
         return ((self.k0 / self.rho0) *
                 np.power(_rno_norm(x, self.rho0), (self.k0_prime - 1.0)))
 
@@ -1246,7 +1389,7 @@ class SandiaPC(Pressure_Fit_Class):
                k5 * y ** 5
 
     def _derivative(self, x):
-        y = _eta(x, rho0)
+        y = _eta(x, self.rho0)
         return -(self.kneg1 * y ** (-2)) + \
                self.k1 / self.rho0 + \
                2 * self.k2 * y + \
@@ -1779,7 +1922,7 @@ class Broken_Ap1(Pressure_Fit_Class):
     """
 
     def __init__(self, args, name):
-        super(Ap1, self).__init__(args, name)
+        super(Ap1, self).__init__(args, name) # ??
         self.k0 = args.k0
         self.rho0 = args.rho0
         self.z = args.z
@@ -1847,7 +1990,7 @@ class Broken_Ap2(Pressure_Fit_Class):
     """
 
     def __init__(self, args, name):
-        super(Ap2, self).__init__(args, name)
+        super(Ap2, self).__init__(args, name) # Unsure what this is doing and why it runs
         self.k0 = args.k0
         self.k0_prime = args.k0_prime
         self.rho0 = args.rho0
@@ -2231,7 +2374,7 @@ class ESeries(Energy_Fit_Class):
 
         answer = 0
         for i in range(0, int(order) - 3):
-            answer += ((float(cn[i]) / float(factorial(i + 4))) *
+            answer += ((float(cn[i]) / float(math.factorial(i + 4))) *
                        pow(0.5 * (pow(np.asarray(x) / rho0,
                                       2.0 / 3.0) - 1.0), i + 4))
 
@@ -2481,7 +2624,7 @@ class GammaRho(Base_Fit_Class):
             x_values = [point[0] for point in points]
             y_values = [point[1] for point in points]
             interpFunc = interp.interp1d(x_values, y_values);
-            self.gamma0 = interpFunc(rh0)
+            self.gamma0 = interpFunc(self.rh0)
         elif (self.rho0 == None):
             raise RuntimeError("Please define rho0 if gamma0 is defined")
         if (self.q == None):  # Calculate a guess for q
@@ -2550,7 +2693,7 @@ class GammaV(Base_Fit_Class):
             x_values = [point[0] for point in points]
             y_values = [point[1] for point in points]
             interpFunc = interp.interp1d(x_values, y_values);
-            self.gamma0 = interpFunc(rh0)
+            self.gamma0 = interpFunc(self.rh0)
         elif (self.rho0 == None):
             raise RuntimeError("Please define rho0 if gamma0 is defined")
 

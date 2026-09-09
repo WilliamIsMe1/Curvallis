@@ -1,1 +1,20 @@
+# COMPILED PYTHON FILES
 *.pyc
+
+# VIRTUAL ENVIRONMENT FOLDERS
+bin/*
+bin
+lib/*
+lib
+include/*
+include
+share/*
+share
+lib64/*
+lib64
+errors_given.log
+pyvenv.cfg
+
+.idea/
+/examples/fit_curve_out.dat
+/examples/moved_points_out.dat

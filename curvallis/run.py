@@ -33,7 +33,10 @@ from curvallis import window
 from math import log10
 from curvallis.version import version as VERSION_STRING
 
-matplotlib.use('TkAgg')
+if sys.platform == 'darwin': # Perhaps more system checks need to be used
+    matplotlib.use('MacOSX')
+else:
+    matplotlib.use('TkAgg')
 
 # Overwrite Panning and Zooming Functions
 PAN_ENABLED = False
@@ -183,8 +186,8 @@ class CurveInteractor(object):
             io_manager=self._io_manager)
         self._register_callbacks()
         # Create rectangle selector for selecting multiple points
-        self._selector = widgets.RectangleSelector(self._ax, self.line_select_callback,
-                                                   drawtype='box', useblit=True,
+        self._selector = widgets.RectangleSelector(self._ax, self.process_line_select,
+                                                   useblit=True, # drawtype is deprecated and is set to 'box' by default
                                                    button=[1, 3],  # don't use middle button
                                                    spancoords='pixels')
         self._selector.set_active(False)
@@ -309,7 +312,7 @@ class CurveInteractor(object):
         if self._background_data_sets.num_sets() > 0:
             # Plot each background data line
             for back_set in self._background_data_sets.get_set_values():
-                if len(back_set) > 0:
+                if (len(back_set) > 0):
                     self._background_line.append(
                         lines.Line(self._ax, lines.line_attributes['background_points']))
                     self._background_line[-1].plot_xy_data(back_set)
@@ -527,16 +530,15 @@ class CurveInteractor(object):
                     self._figure_padding = 0
                 self._figure.tight_layout(pad=self._figure_padding)
                 self._canvas.draw()
-            """ Currently broken
-            elif event.key == 'delete':  # If "delete" pressed
-                if (self._move_set == True):
+            elif event.key == 'delete' or event.key == 'backspace':  # If "delete" pressed
+                if self._move_set: # if self._move_set == True
                     print("Block Delete Points.")
-                    self._regions._remove_points(event, self._xmin, self._xmax, self._ymin, self._ymax)
+                    print(type(self._regions))
+                    self._regions._remove_points(event, self._xmin, self._xmax, self._ymin, self._ymax) # here is the problem
                     self._draw()
                     #self._attempt_begin_move_point(event)
                 else:
                     print("Block selection is not enabled.")
-            """
 
     def xlim_changed_callback(self, event):
         """ xlim is changed by a zoom or a pan
@@ -549,7 +551,7 @@ class CurveInteractor(object):
         self._plot_icurves()
         self._canvas.draw()
 
-    def line_select_callback(self, eclick, erelease):
+    def process_line_select(self, eclick, erelease):
         """Press and release events for block selecting.
         """
         x1, y1 = eclick.xdata, eclick.ydata
@@ -573,7 +575,6 @@ class CurveInteractor(object):
         self._canvas.mpl_connect('button_release_event', self.button_release_callback)
         self._canvas.mpl_connect('motion_notify_event', self.motion_notify_callback)
         self._canvas.mpl_connect('key_press_event', self.key_press_callback)
-        self._canvas.mpl_connect('line_select_event', self.line_select_callback)
         self._xlim_callback_id = self._ax.callbacks.connect(
             'xlim_changed', self.xlim_changed_callback)
 

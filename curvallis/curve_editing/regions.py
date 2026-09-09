@@ -699,7 +699,7 @@ class _Line_Sets(object):
     def move_point_in_progress(self):
         return self._moving_point_set_name is not None
 
-    def add_point(self, event):
+    def add_point(self, event): 
         # FIX: Will add point to every line if more than one
         # Currently disabled for 2d plots
         for name, line_set in self._sets.items():
@@ -711,7 +711,6 @@ class _Line_Sets(object):
         for name, line_set in self._sets.items():
             line_set.remove_point(event)
 
-    # Function currently broken
     def remove_points(self, event, xmin, xmax, ymin, ymax):
         # FIX: Will try to remove point from every line if more than one
         # Currently disabled for 2d plots
@@ -1519,7 +1518,6 @@ class Regions(object):
         event.y = (ymin + ymax) / 2
         region_index = self.get_region_index(event.x, event.y)
         region = self._regions[region_index]
-        print("x/y range: (" + str(xmin) + " " + str(xmax) + "), ( " + str(ymin) + " " + str(ymax) + ")")
         region.remove_points(event, xmin, xmax, ymin, ymax)
         # Redraw fit curve
         self._moving_set_region_index = region_index
