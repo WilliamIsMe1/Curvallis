@@ -16,3 +16,5 @@ errors_given.log
 pyvenv.cfg
 
 .idea/
+/examples/fit_curve_out.dat
+/examples/moved_points_out.dat
