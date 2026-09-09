@@ -33,7 +33,10 @@ from curvallis import window
 from math import log10
 from curvallis.version import version as VERSION_STRING
 
-matplotlib.use('TkAgg')
+if sys.platform == 'darwin': # Perhaps more system checks need to be used
+    matplotlib.use('MacOSX')
+else:
+    matplotlib.use('TkAgg')
 
 # Overwrite Panning and Zooming Functions
 PAN_ENABLED = False
