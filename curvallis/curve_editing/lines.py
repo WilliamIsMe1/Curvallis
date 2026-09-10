@@ -38,6 +38,52 @@ line_attributes = dict(
     region_boundary=dict(
         linestyle=':', color='black',))
 
+fitter_colors = dict(
+    # --- Pressure EOS fitters ---
+    AP2='crimson',
+    birch2='firebrick',
+    birch3='red',
+    birch4='darkred',
+    vinet='blue',
+    murnaghan='green',
+    sandiapc='slategray',
+    anton='darkorange',
+    bardeen='saddlebrown',
+    johnson='teal',
+    kumari='darkcyan',
+    log2='mediumvioletred',
+    log='deeppink',
+    shank='indigo',
+    broken_ap1='gray',
+    broken_ap2='dimgray',
+
+    # --- Energy EOS fitters (E-prefixed forms) ---
+    eAP2='lightcoral',
+    ebirch3='salmon',
+    ebirch4='darksalmon',
+    emurnaghan='seagreen',
+    evinet='royalblue',
+    eseries='goldenrod',
+    highp='chocolate',
+
+    # --- Theta / Gamma (Gruneisen-related) fitters ---
+    thetabp='purple',
+    gammaRho='mediumpurple',
+    gammaV='orchid',
+
+    # --- Simon-Glatzel melting-curve fitters ---
+    simong='navy',
+    simongexp='cornflowerblue',
+
+    # --- Polynomial-family fitters (matched by prefix, not exact key) ---
+    poly='orange', # poly1..poly12
+    gammapoly='darkgoldenrod', # gammapoly1..gammapoly12
+    gammapolyv='peru', # gammapolyv1..gammapolyv12
+
+    # --- Special / fallback cases ---
+    none='red', # aliases Poly_Original; matches default fit_curve color
+)
+
 
 class Line(object):
     """ Contains info about one line.

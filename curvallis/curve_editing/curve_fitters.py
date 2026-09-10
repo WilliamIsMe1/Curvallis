@@ -2104,6 +2104,7 @@ class Poly_Original(PolyBase):
         self.integral_scale = args.integral_scale
         self.x_integral_ref = args.x_integral_ref
         self.y_integral_ref = args.y_integral_ref
+        self.name = name
 
     def _set_poly(self, coeffs):
         # Create a polynomial function using the coefficients, to be used to
@@ -2753,6 +2754,7 @@ class GammaPoly(PolyBase):
         self._lowP_f = None
         # rho_is_density indicates whether x values and rho0 are density (True) or volume (False)
         self._rho_is_density = rho_is_density
+        self.name = name
 
     def _get_highP_lowP_x_indices(self, x):
         """
