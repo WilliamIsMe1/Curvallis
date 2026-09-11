@@ -171,7 +171,7 @@ class _Line_Set_With_Fit(lines.Line_Set):
         self._ax = ax
         if not is_eos_data:
             fit_attrs = dict(lines.line_attributes['fit_curve'])
-            fit_attrs['color'] = _get_fitter_color(self._fitter.name, fit_attrs['color'])
+            fit_attrs['color'] = _get_fitter_color(self._fitter if type(self._fitter) is str else self._fitter.name, fit_attrs['color'])
             self.fit_curve = lines.Line(ax, fit_attrs)
             self.derivative_curve = lines.Line(ax, lines.line_attributes['derivative'])
             self.integral_curve = lines.Line(ax, lines.line_attributes['integral'])
