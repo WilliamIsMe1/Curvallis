@@ -406,6 +406,9 @@ class CurveInteractor(object):
             else:  # Else:
                 self._quit_pending = False  # cancel quit pending
                 print('Quit cancelled.')
+        elif event.key == 'cmd+q':
+            print('Quitting')
+            exit(0)
         elif event.key == 'q':  # If 'q' pressed
             # Display pending quit
             print('Quit requested.  Press q again to quit, any other key to cancel.')
