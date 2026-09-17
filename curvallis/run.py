@@ -38,6 +38,8 @@ if sys.platform == 'darwin': # Perhaps more system checks need to be used
 else:
     matplotlib.use('TkAgg')
 
+rcParams['font.size'] = 12
+
 # Overwrite Panning and Zooming Functions
 PAN_ENABLED = False
 ZOOM_ENABLED = False
@@ -205,8 +207,9 @@ class CurveInteractor(object):
         self._figure.tight_layout(pad=self._figure_padding)
         # Make axes ticks update and stay detailed
         self._ax.minorticks_on()
-        self._ax.set_xlabel(self._args.x_label[0])
-        self._ax.set_ylabel(self._args.y_label[0])
+        self._ax.set_xlabel(self._args.x_label[0], fontsize=rcParams['font.size'])
+        self._ax.set_ylabel(self._args.y_label[0], fontsize=rcParams['font.size'])
+        self._ax.tick_params(axis='both', labelsize=12)
         #        self._background_line = lines.Line(
         #            self._ax, lines.line_attributes['background_points'])
         self._background_line = []
@@ -762,16 +765,16 @@ class CurveInteractor(object):
         # Set up Equation Plotting window
         textbox = Tk()
         textbox.title("Interactive Plotter")
-        l = Label(textbox, text="Enter an equation to plot in terms of x.")
-        l2 = Label(textbox, text="F(x) = ")
-        l3 = Label(textbox, text="Filename: ")
-        e = Entry(textbox, width=35)
-        e2 = Entry(textbox, width=35)
-        b1 = Button(textbox, text="Plot", width=10,
+        l = Label(textbox, text="Enter an equation to plot in terms of x.", font=('Helvetica', 12))
+        l2 = Label(textbox, text="F(x) = ", font=('Helvetica', 12))
+        l3 = Label(textbox, text="Filename: ", font=('Helvetica', 12))
+        e = Entry(textbox, width=35, font=('Helvetica', 12))
+        e2 = Entry(textbox, width=35, font=('Helvetica', 12))
+        b1 = Button(textbox, text="Plot", width=10, font=('Helvetica', 12),
                     command=lambda: plot_callback(e))
-        b2 = Button(textbox, text="Delete", width=10,
+        b2 = Button(textbox, text="Delete", width=10, font=('Helvetica', 12),
                     command=lambda: delete_callback(e))
-        b3 = Button(textbox, text="Write", width=10,
+        b3 = Button(textbox, text="Write", width=10, font=('Helvetica', 12),
                     command=lambda: write_callback(e, e2))
         textbox.protocol("WM_DELETE_WINDOW", lambda: close_callback(e))
         l.grid(columnspan=4, pady=10, padx=100)
