@@ -38,7 +38,17 @@ if sys.platform == 'darwin': # Perhaps more system checks need to be used
 else:
     matplotlib.use('TkAgg')
 
-rcParams['font.size'] = 12
+font_size = 12
+
+rcParams['font.size'] = font_size
+
+rcParams['xtick.labelsize'] = font_size # Somewhere else is overriding these two
+rcParams['ytick.labelsize'] = font_size
+
+rcParams['axes.titlesize'] = font_size
+rcParams['axes.labelsize'] = font_size
+rcParams['legend.fontsize'] = font_size
+rcParams['figure.titlesize'] = font_size
 
 # Overwrite Panning and Zooming Functions
 PAN_ENABLED = False
