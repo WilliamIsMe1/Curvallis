@@ -1347,7 +1347,7 @@ class SandiaPC(Pressure_Fit_Class):
         self.rho0 = args.rho0
 
     def _set_coefficients(self, coeffs):
-        (self.kneg1, self.kneg0, self.k1, self.k2, self.k3, self.k4, self.k5) = coeffs[:-1]
+        (self.kneg1, self.kneg0, self.k1, self.k2, self.k3, self.k4, self.k5, unused) = coeffs[:-1][0] # Might be the wrong place to put this put it probably works
 
     def _get_coefficients(self):
         return self.kneg1, self.kneg0, self.k1, self.k2, self.k3, self.k4, self.k5, self.rho0
