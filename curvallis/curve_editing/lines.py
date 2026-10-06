@@ -13,6 +13,9 @@
 import numpy as np
 from operator import itemgetter
 import math
+
+from matplotlib.axes import Axes
+
 from curvallis.version import version as VERSION_STRING
 
 # These line attributes are declared here at the top of the file so they are
@@ -166,20 +169,20 @@ class Line(object):
         assert len(x_data_y_data) == 2, "No points in region."
 
         #Actual Line
-        self._id = self._ax.plot(
+        self._id: Axes = self._ax.plot(
             x_data_y_data[0], x_data_y_data[1],
             visible=visible,
             animated=animated,
             **self._attributes)[0]
         #Set highlighted points (Starts blank)
-        self._highlight = self._ax.plot(
+        self._highlight: Axes = self._ax.plot(
             [],[],
             visible=visible,
             animated=animated,
             linestyle='',
             marker='o', markerfacecolor='green')[0]
         #Moved points (Starts blank)
-        self._moved_points = self._ax.plot(
+        self._moved_points: Axes = self._ax.plot(
             [],[],
             visible=visible,
             animated=animated,
