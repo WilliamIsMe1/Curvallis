@@ -18,15 +18,19 @@ Created on Fri Mar 13 15:34:13 2015
 @author: Paul Minner (minner2)
 """
 
-from __future__ import print_function
+from __future__ import print_function, annotations
 
 import sys
 import math
+
 import matplotlib
-from tkinter import Tk, Label, Button, Entry
+from tkinter import Tk, Label, Button, Entry, Canvas
 from matplotlib import pyplot, rcParams
+from matplotlib.axes import Axes
 from matplotlib.backend_bases import NavigationToolbar2, FigureManagerBase
 from matplotlib import widgets
+from matplotlib.figure import Figure
+
 from curvallis.window import key_mappings_window, fitter_info_window
 from curvallis.curve_editing import curve_fitters, io, lines, regions, configargparse
 from curvallis import window
@@ -38,7 +42,7 @@ if sys.platform == 'darwin': # Perhaps more system checks need to be used
 else:
     matplotlib.use('TkAgg')
 
-font_size = 12
+font_size: int = 12
 
 rcParams['font.size'] = font_size
 
@@ -51,8 +55,8 @@ rcParams['legend.fontsize'] = font_size
 rcParams['figure.titlesize'] = font_size
 
 # Overwrite Panning and Zooming Functions
-PAN_ENABLED = False
-ZOOM_ENABLED = False
+PAN_ENABLED: bool = False
+ZOOM_ENABLED: bool = False
 
 old_pan = NavigationToolbar2.pan
 
@@ -101,25 +105,25 @@ class CurveInteractor(object):
 
     def __init__(self):
         self._args = None
-        self._ax = None
+        self._ax: Axes = None
         # Used in pyplot callbacks.  Not related to background_*:
-        self.background = None
-        self._background_data_sets = io.Data_Sets()
+        self.background = None # Looks apparently unused in project
+        self._background_data_sets: io.Data_Sets = io.Data_Sets()
         self._background_line: list[lines.Line] = []
         self._canvas = None
-        self._figure = None
+        self._figure: Figure = None
         self._figure_padding = 1.08
         self._input_data_sets = io.Data_Sets()
-        self._io_manager = None
+        self._io_manager: io.Manager | None = None
         self._parser = None
         self._quit_pending = False
-        self._regions = None
+        self._regions: regions.Regions = None
         self._xlim_callback_id = None
-        self._xy_limits = io.XY_Limits()
+        self._xy_limits: io.XY_Limits = io.XY_Limits()
         self._define_args()
-        self._add_points = False
+        self._add_points: bool = False
         # interactive equation plotting
-        self._iplot = {}
+        self._iplot: dict = {}
         # Disable to create own scaling funcion
         rcParams['keymap.xscale'] = ''
         rcParams['keymap.yscale'] = ''
@@ -127,11 +131,11 @@ class CurveInteractor(object):
         self._selector = None
         self._find_set = False
         self._move_set = False
-        self._xmin = None
-        self._xmax = None
-        self._ymin = None
-        self._ymax = None
-        self._last_click = None
+        self._xmin: float | int = 0
+        self._xmax: float | int = 0
+        self._ymin: float | int = 0
+        self._ymax: float | int = 0
+        self._last_click: list[int] | None = None
 
     def _define_args(self):
         parser = configargparse.ArgumentParser(
@@ -184,13 +188,13 @@ class CurveInteractor(object):
         """
         rcParams["keymap.quit"] = ["ctrl+w", "cmd+w"]  # Changes matplotlib's default quit keys
         self._process_args()
-        self._io_manager = io.Manager(self._args)
+        self._io_manager: io.Manager = io.Manager(self._args)
         # Read the data sets outside of Regions so we can discover the x, y
         # range of the data to use for the initial GUI size:
         self._input_data_sets = self._io_manager.get_movable_data_sets()
         self._background_data_sets = self._io_manager.get_background_data_sets()
         self._setup_GUI()
-        self._regions = regions.Regions(
+        self._regions: regions.Regions = regions.Regions(
             ax=self._ax,
             args=self._args,
             input_data_sets=self._input_data_sets,
@@ -209,8 +213,8 @@ class CurveInteractor(object):
         pyplot.show()
 
     def _setup_GUI(self):
-        self._figure = pyplot.figure('Curve Editor', figsize=(12, 8))
-        self._canvas = self._figure.canvas
+        self._figure: Figure = pyplot.figure('Curve Editor', figsize=(12, 8))
+        self._canvas: Canvas = self._figure.canvas
         # One row, one column, first subplot:
         self._ax = self._figure.add_subplot(1, 1, 1) # TODO MARKER HERE LOOK SUBPLOT STUFF WE NEED TO MODIFY THIS TO BECOME A SCATTERPLOT IF THE DATA IS 2D
         # Minimize margins:
@@ -409,7 +413,7 @@ class CurveInteractor(object):
             # Don't care if the cursor is on the plot (event.inaxes):
             self._finish_move_point()
 
-    def key_press_callback(self, event):
+    def key_press_callback(self, event: matplotlib.backend_bases.KeyEvent):
         """ Whenever a key is pressed"""
         print('Pressed %s' % event.key)  # Display name of pressed key
         if self._quit_pending:  # If a quit is pending
@@ -549,8 +553,7 @@ class CurveInteractor(object):
             elif event.key == 'delete' or event.key == 'backspace':  # If "delete" pressed
                 if self._move_set: # if self._move_set == True
                     print("Block Delete Points.")
-                    print(type(self._regions))
-                    self._regions._remove_points(event, self._xmin, self._xmax, self._ymin, self._ymax) # here is the problem
+                    self._regions.remove_points(event, self._xmin, self._xmax, self._ymin, self._ymax)
                     self._draw()
                     #self._attempt_begin_move_point(event)
                 else:
@@ -591,7 +594,7 @@ class CurveInteractor(object):
         self._canvas.mpl_connect('button_release_event', self.button_release_callback)
         self._canvas.mpl_connect('motion_notify_event', self.motion_notify_callback)
         self._canvas.mpl_connect('key_press_event', self.key_press_callback)
-        self._xlim_callback_id = self._ax.callbacks.connect(
+        self._xlim_callback_id: int = self._ax.callbacks.connect(
             'xlim_changed', self.xlim_changed_callback)
 
     # END Callbacks ============================================================

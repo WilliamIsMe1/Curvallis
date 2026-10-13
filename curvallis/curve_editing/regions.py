@@ -10,8 +10,12 @@
 # Please also Curvallis/LICENSE.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from __future__ import print_function
+from __future__ import print_function, annotations
 import copy
+
+import matplotlib
+from matplotlib.backend_bases import KeyEvent
+from matplotlib.figure import Figure
 
 from curvallis.version import version as VERSION_STRING
 from curvallis.window import fitter_info_window, update_fitter_info_window
@@ -441,16 +445,16 @@ class _Line_Sets(object):
     Similar to io.Data_Sets.  One Line_Set object per named Data_Set.
     """
 
-    def __init__(self, names, ax, fitter, fitter2, ghost_sets, x_low_limit,
-                 x_high_limit, allow_xy_move, args, is_eos_data):
+    def __init__(self, names: list[str], ax: Figure, fitter, fitter2, ghost_sets, x_low_limit,
+                 x_high_limit, allow_xy_move: bool, args, is_eos_data: bool):
         self._args = args
-        self._ax = ax
-        self._is_eos_data = is_eos_data
-        self._fitter = copy.deepcopy(fitter)
-        self._fitter2 = copy.deepcopy(fitter2)
+        self._ax: Figure = ax
+        self._is_eos_data: bool = is_eos_data
+        self._fitter: curve_fitters.Base_Fit_Class | str = copy.deepcopy(fitter)
+        self._fitter2: curve_fitters.Base_Fit_Class | str = copy.deepcopy(fitter2)
         self._ghost_sets = ghost_sets
-        self._moving_point_set_name = None
-        self._sets = {}
+        self._moving_point_set_name: str | None = None
+        self._sets: dict[str, _Line_Set_With_Fit] = {}
         self._region_boundary = lines.Line(ax, lines.line_attributes['region_boundary'])
         self._x_high_limit = x_high_limit
         self._x_low_limit = x_low_limit
@@ -496,7 +500,7 @@ class _Line_Sets(object):
         """
         return list(self._sets.values())[0]
 
-    def get_fit_curve_points(self, Logarithmic=False):
+    def get_fit_curve_points(self, Logarithmic: bool =False):
         """ Return the line set's ONLY fit curve's points.
         """
         line_set = self._get_only_line_set()
@@ -722,7 +726,7 @@ class _Line_Sets(object):
         for name, line_set in self._sets.items():
             line_set.remove_point(event)
 
-    def remove_points(self, event, xmin, xmax, ymin, ymax):
+    def remove_points(self, event: KeyEvent, xmin: float, xmax: float, ymin: float, ymax: float):
         # FIX: Will try to remove point from every line if more than one
         # Currently disabled for 2d plots
         for name, line_set in self._sets.items():
@@ -738,7 +742,7 @@ class _Region(object):
     """
 
     def __init__(self, id_in, ax, data_sets, ghost_sets, x_low_limit, x_high_limit, fitter,
-                 fitter2, is_eos_data, allow_xy_move, args):
+                 fitter2, is_eos_data: bool, allow_xy_move: bool, args):
         """
         :param id_in:   Region number
         :param ax:
@@ -750,20 +754,20 @@ class _Region(object):
 
         """
         self._args = args
-        self._ax = ax
-        self._is_eos_data = is_eos_data
+        self._ax: Figure = ax
+        self._is_eos_data: bool = is_eos_data
         self._ghost_sets = ghost_sets
 
         if fitter != 'none':
-            self._fitter = curve_fitters.factory.make_object_of_class(
+            self._fitter: curve_fitters.Base_Fit_Class | str = curve_fitters.factory.make_object_of_class(
                 name=fitter, args=args)
         else:
-            self._fitter = 'none'
+            self._fitter: curve_fitters.Base_Fit_Class | str = 'none'
         if fitter2 != 'none':
-            self._fitter2 = curve_fitters.factory.make_object_of_class(
+            self._fitter2: curve_fitters.Base_Fit_Class | str = curve_fitters.factory.make_object_of_class(
                 name=fitter2, args=args)
         else:
-            self._fitter2 = 'none'
+            self._fitter2: curve_fitters.Base_Fit_Class | str = 'none'
 
         self._id = id_in
         self._moving_point_data_set_name = None
@@ -772,7 +776,7 @@ class _Region(object):
         self._x_high_limit = x_high_limit
         self._x_low_limit = x_low_limit
 
-        self._line_sets = _Line_Sets(
+        self._line_sets: _Line_Sets = _Line_Sets(
             names=data_sets.get_names(),
             ax=ax,
             fitter=self._fitter,
@@ -948,8 +952,7 @@ class _Region(object):
     def remove_point(self, event):
         self._line_sets.remove_point(event)
 
-    # Function currently broken
-    def remove_points(self, event, xmin, xmax, ymin, ymax):
+    def remove_points(self, event: KeyEvent, xmin, xmax, ymin, ymax):
         self._line_sets.remove_points(event, xmin, xmax, ymin, ymax)
 
     # END Point movement #######################################################
@@ -1520,15 +1523,14 @@ class Regions(object):
         self._moving_set_region_index = region_index
         self.finish_move_set()
 
-    # Function currently broken
-    def _remove_points(self, event, xmin, xmax, ymin, ymax):
+    def remove_points(self, event: KeyEvent, xmin, xmax, ymin, ymax):
         """
         removes a group of points when pressing delete
         """
         event.x = (xmin + xmax) / 2
         event.y = (ymin + ymax) / 2
         region_index = self.get_region_index(event.x, event.y)
-        region = self._regions[region_index]
+        region: _Region = self._regions[region_index]
         region.remove_points(event, xmin, xmax, ymin, ymax)
         # Redraw fit curve
         self._moving_set_region_index = region_index

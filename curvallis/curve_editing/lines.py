@@ -15,6 +15,7 @@ from operator import itemgetter
 import math
 
 from matplotlib.axes import Axes
+from matplotlib.backend_bases import KeyEvent
 
 from curvallis.version import version as VERSION_STRING
 
@@ -564,21 +565,18 @@ class Line_Set(object):
         else:
             return
 
-    def remove_points(self, event, xmin, xmax, ymin, ymax): # Function fixed now
+    def remove_points(self, event: KeyEvent, xmin, xmax, ymin, ymax): # Function fixed now
 
         data_points = self.movable.get_xy_data()
         display_points = self.movable.points_to_display_space(data_points)
-        x_values, y_values = display_points[:,0], display_points[:,1]
-        remove_points_indices = []
+        x_values, y_values = display_points[:,0], display_points[:,1] # These variables are unused; should they be removed?
+        remove_points_indices = [] # Safe way to remove items during a loop iterating through said items
 
         for i in range(len(display_points)):
-            print(display_points[i])
             if (xmin <= data_points[i][0] <= xmax) and (ymin <= data_points[i][1] <= ymax):
-                print("XY match: " + str(display_points[i]))
                 remove_points_indices.append(i)
             elif xmin <= data_points[i][0] <= xmax:
-                print("X match: " + str(display_points[i]))
-        print("Deleting " + str(len(remove_points_indices)) + " points.")
+                pass # printout comment used to be here.
         for i in range(len(remove_points_indices)-1, -1, -1): # Change the middle parameter to -1 so that the "upper limit " is zero inclusive. Why did it count backwards??
             data_points.remove(data_points[remove_points_indices[i]])
         self.movable.set_xy_data(data_points)
