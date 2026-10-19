@@ -25,9 +25,11 @@ import math
 
 import matplotlib
 from tkinter import Tk, Label, Button, Entry, Canvas
+
+import numpy
 from matplotlib import pyplot, rcParams
 from matplotlib.axes import Axes
-from matplotlib.backend_bases import NavigationToolbar2, FigureManagerBase
+from matplotlib.backend_bases import NavigationToolbar2, FigureManagerBase, FigureCanvasBase
 from matplotlib import widgets
 from matplotlib.figure import Figure
 
@@ -103,14 +105,13 @@ class CurveInteractor(object):
 
     # Init support =============================================================
 
-    def __init__(self):
+    def __init__(self): # This function is always called with .run() appended directly after. Should ".run()" be inlined?
         self._args = None
         self._ax: Axes = None
         # Used in pyplot callbacks.  Not related to background_*:
-        self.background = None # Looks apparently unused in project
         self._background_data_sets: io.Data_Sets = io.Data_Sets()
         self._background_line: list[lines.Line] = []
-        self._canvas = None
+        self._canvas: FigureCanvasBase = None
         self._figure: Figure = None
         self._figure_padding = 1.08
         self._input_data_sets = io.Data_Sets()
@@ -213,8 +214,8 @@ class CurveInteractor(object):
         pyplot.show()
 
     def _setup_GUI(self):
-        self._figure: Figure = pyplot.figure('Curve Editor', figsize=(12, 8))
-        self._canvas: Canvas = self._figure.canvas
+        self._figure = pyplot.figure('Curve Editor', figsize=(12, 8))
+        self._canvas = self._figure.canvas
         # One row, one column, first subplot:
         self._ax = self._figure.add_subplot(1, 1, 1) # TODO MARKER HERE LOOK SUBPLOT STUFF WE NEED TO MODIFY THIS TO BECOME A SCATTERPLOT IF THE DATA IS 2D
         # Minimize margins:
@@ -258,13 +259,13 @@ class CurveInteractor(object):
             Set the canvas plotting limits to those, plus some padding.
         """
 
-        def expanded_range(lows, highs, factor):
+        def expanded_range(lows: list[float], highs: list[float], factor):
             """ Receive: [lownum, possible args value], [highnum, possible
                 args value], factor
                 Return low and high moved apart by abs(max-min) * factor if
                 not set manually by user
             """
-            rangee = highs[0] - lows[0]
+            rangee: float = highs[0] - lows[0]
             move = rangee * factor / 2
             if not lows[1]:
                 lows[0] -= move

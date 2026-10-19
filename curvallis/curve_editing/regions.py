@@ -11,24 +11,21 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 from __future__ import print_function, annotations
+
 import copy
+from math import log10
 
-import matplotlib
+import numpy as np
+from matplotlib.axes._axes import Axes
 from matplotlib.backend_bases import KeyEvent
-from matplotlib.figure import Figure
 
-from curvallis.version import version as VERSION_STRING
-from curvallis.window import fitter_info_window, update_fitter_info_window
 import curvallis.curve_editing.curve_fitters as curve_fitters
 import curvallis.curve_editing.io as io
 import curvallis.curve_editing.lines as lines
 import curvallis.curve_editing.smoothers as smoothers
-from pylab import polyfit
-import numpy as np
-from operator import itemgetter
-from math import log10
+from curvallis.window import fitter_info_window, update_fitter_info_window
 
-_INFINITY = float('inf')
+_INFINITY: float = float('inf')
 
 
 # TODO: recalculate the equation for a region when a point is moved in that region and then plot the region
@@ -159,20 +156,19 @@ class _Line_Set_With_Fit(lines.Line_Set):
     """ Has own fitter object, plus various fit curve lines
     """
 
-    def __init__(self, name, ax, fitter, fitter2, ghost_set, x_low_limit,
-                 x_high_limit, allow_xy_move, args, is_eos_data):
+    def __init__(self, name: str, ax: Axes, fitter: curve_fitters.Base_Fit_Class | str, fitter2: curve_fitters.Base_Fit_Class | str, ghost_set: list[tuple[float, float]], x_low_limit: float, x_high_limit: float, allow_xy_move: bool, args, is_eos_data: bool):
         super(_Line_Set_With_Fit, self).__init__(name, ax, allow_xy_move, is_eos_data)
         self._args = args
-        self._fitter = copy.deepcopy(fitter)
-        self._fitter2 = copy.deepcopy(fitter2)
-        self._ghost_set = ghost_set
-        self._update_points = False
-        self._x_high_limit = x_high_limit
-        self._x_low_limit = x_low_limit
-        self._x_view_high_limit = x_high_limit
-        self._x_view_low_limit = x_low_limit
-        self._logscale = False
-        self._ax = ax
+        self._fitter: curve_fitters.Base_Fit_Class | str = copy.deepcopy(fitter)
+        self._fitter2: curve_fitters.Base_Fit_Class | str = copy.deepcopy(fitter2)
+        self._ghost_set: list[tuple[float, float]] = ghost_set
+        self._update_points: bool = False
+        self._x_high_limit: float = x_high_limit
+        self._x_low_limit: float = x_low_limit
+        self._x_view_high_limit: float = x_high_limit
+        self._x_view_low_limit: float = x_low_limit
+        self._logscale: bool = False
+        self._ax: Axes = ax
         if not is_eos_data:
             fit_attrs = dict(lines.line_attributes['fit_curve'])
             fit_attrs['color'] = _get_fitter_color(self._fitter if type(self._fitter) is str else self._fitter.name, fit_attrs['color'])
@@ -180,17 +176,17 @@ class _Line_Set_With_Fit(lines.Line_Set):
             self.derivative_curve = lines.Line(ax, lines.line_attributes['derivative'])
             self.integral_curve = lines.Line(ax, lines.line_attributes['integral'])
 
-    def _calc_x_values(self, x_first, x_last, x_count, logarithmic=False):
+    def _calc_x_values(self, x_first: float, x_last: float, x_count: int, logarithmic: bool=False) -> list[float]:
         """ For a given x range, interpolate x_count x values (without any
           cumulative rounding errors) and return them.
 
-        :param x_first:
-        :param x_last:
-        :param x_count:
-        :return: list
+        :param x_first: float
+        :param x_last: float
+        :param x_count: int
+        :return: list[float]
         """
 
-        positive = True
+        positive: bool = True
         if x_first <= 0:
             positive = False
         elif x_last <= 0:
@@ -222,7 +218,7 @@ class _Line_Set_With_Fit(lines.Line_Set):
                 result.append(x)
         return result
 
-    def calc_fit_points_for_range(self, x_first, x_last, point_count, logarithmic=False):
+    def calc_fit_points_for_range(self, x_first, x_last, point_count, logarithmic=False) ->list[list[float]]:
         """ For a given x range, interpolate x_count x values and calculate
         a y value for each, returning the calculated x and y values.
         """
@@ -231,7 +227,7 @@ class _Line_Set_With_Fit(lines.Line_Set):
         x_values = np.asarray(self._calc_x_values(x_first, x_last, point_count, logarithmic))
         y_values = []
 
-        if (self._fitter2 == 'none'):
+        if self._fitter2 == 'none':
             y_values = np.vectorize(self._fitter.func)(x_values)
         else:
             y_values = np.vectorize(self._fitter_func_minus_fitter2_func)(x_values)
@@ -249,7 +245,7 @@ class _Line_Set_With_Fit(lines.Line_Set):
         x_values = np.asarray(self._calc_x_values(x_first, x_last, point_count, logarithmic))
         y_values = []
 
-        if (self._fitter2 == 'none'):
+        if self._fitter2 == 'none':
             y_values = np.vectorize(self._fitter.derivative)(x_values)
         else:
             y_values = np.vectorize(self._fitter_derivative_minus_fitter2_derivative)(x_values)
@@ -266,7 +262,7 @@ class _Line_Set_With_Fit(lines.Line_Set):
         """
         x_values = np.asarray(self._calc_x_values(x_first, x_last, point_count, logarithmic))
         y_values = []
-        if (self._fitter2 == 'none'):
+        if self._fitter2 == 'none':
             y_values = np.vectorize(self._fitter.second_derivative)(x_values)
         else:
             y_values = np.vectorize(self._fitter_second_derivative_minus_fitter2_second_derivative)(x_values)
@@ -282,9 +278,9 @@ class _Line_Set_With_Fit(lines.Line_Set):
 
         """
         x_values = np.asarray(self._calc_x_values(x_first, x_last, point_count))
-        y_values = []
+        y_values = np.asarray([])
 
-        if (self._fitter2 == 'none'):
+        if self._fitter2 == 'none':
             y_values = np.vectorize(self._fitter.integral)(x_values)
         else:
             y_values = np.vectorize(self._fitter_integral_minus_fitter2_integral)(x_values)
@@ -317,7 +313,7 @@ class _Line_Set_With_Fit(lines.Line_Set):
                 self._fitter.fit_to_points(points)
 
                 # Run if combined fit type
-                if (self._fitter2 != 'none'):
+                if self._fitter2 != 'none':
                     # Calculate error from first fit to use for refined fit
                     orig_points = [point[0] for point in points]
                     y_vals = [point[1] for point in points]
@@ -407,7 +403,7 @@ class _Line_Set_With_Fit(lines.Line_Set):
         self.movable.undo()
         # Undo highlighting if in block select mode
         # Must do here to check if block select mode is active
-        if (self._in_set == True and self.movable._last_highlight != None
+        if (self.in_set == True and self.movable._last_highlight != None
                 and self.movable._last_highlight != []):
             self.movable._highlight.set_data(
                 [data[0] for data in self.movable._last_highlight],
@@ -431,7 +427,7 @@ class _Line_Set_With_Fit(lines.Line_Set):
         self.plot_curves()
 
     def check_move_point(self):
-        if (self._update_points == True):
+        if self._update_points == True:
             self.calculate_fit()
             self.plot_curves()
             self._update_points = False
@@ -445,15 +441,15 @@ class _Line_Sets(object):
     Similar to io.Data_Sets.  One Line_Set object per named Data_Set.
     """
 
-    def __init__(self, names: list[str], ax: Figure, fitter, fitter2, ghost_sets, x_low_limit,
+    def __init__(self, names: list[str], ax: Axes, fitter: curve_fitters.Base_Fit_Class | str, fitter2: curve_fitters.Base_Fit_Class | str, ghost_sets, x_low_limit,
                  x_high_limit, allow_xy_move: bool, args, is_eos_data: bool):
         self._args = args
-        self._ax: Figure = ax
+        self._ax: Axes = ax
         self._is_eos_data: bool = is_eos_data
         self._fitter: curve_fitters.Base_Fit_Class | str = copy.deepcopy(fitter)
         self._fitter2: curve_fitters.Base_Fit_Class | str = copy.deepcopy(fitter2)
         self._ghost_sets = ghost_sets
-        self._moving_point_set_name: str | None = None
+        self._moving_point_set_name: str = ""
         self._sets: dict[str, _Line_Set_With_Fit] = {}
         self._region_boundary = lines.Line(ax, lines.line_attributes['region_boundary'])
         self._x_high_limit = x_high_limit
@@ -522,7 +518,7 @@ class _Line_Sets(object):
             return
 
         # The current fit curve data is custom-generated for the current zoom's .
-        # x range. Calculate the curve for the the movable line's full x range:
+        # x range. Calculate the curve for the movable line's full x range:
         return line_set.calc_fit_points_for_range(
             x_first=self._x_low_limit,
             x_last=self._x_high_limit,
@@ -623,7 +619,7 @@ class _Line_Sets(object):
     def update_ghost_points(self, newlist):
         for line_set in self._sets.values():
             oldlist = line_set._ghost_set
-            if (not np.array_equal(oldlist, newlist)):
+            if not np.array_equal(oldlist, newlist):
                 line_set._ghost_set = newlist
                 line_set._update_points = True
             else:
@@ -633,7 +629,7 @@ class _Line_Sets(object):
         xmin = None
         xmax = None
         for line_set in self._sets.values():
-            if line_set._in_set == True:
+            if line_set.in_set == True:
                 if xmin == None or line_set._set_points[0][0] < xmin:
                     xmin = line_set._set_points[0][0]
                 if xmax == None or line_set._set_points[-1][0] > xmax:
@@ -655,9 +651,9 @@ class _Line_Sets(object):
             if line_set.move_point_in_progress():
                 self._moving_point_set_name = name
                 # Reset undo information for all other lines
-                for name, line_set in self._sets.items():
-                    if name != self._moving_point_set_name:
-                        line_set.movable._last_data = None
+                for name1, line_set1 in self._sets.items():
+                    if name1 != self._moving_point_set_name:
+                        line_set1.movable._last_data = None
                 break
 
     def attempt_get_set(self, xmin, xmax, ymin, ymax):
@@ -666,12 +662,12 @@ class _Line_Sets(object):
 
     def begin_move_set(self, event):
         for name, line_set in self._sets.items():
-            if line_set._in_set == True:
+            if line_set.in_set:
                 line_set.begin_move_set(event)
 
     def finish_move_set(self):
         for name, line_set in self._sets.items():
-            if line_set._in_set == True:
+            if line_set.in_set:
                 line_set.finish_move_set()
 
     def cancel_move_set(self):
@@ -680,16 +676,16 @@ class _Line_Sets(object):
 
     def move_set(self, event):
         for name, line_set in self._sets.items():
-            if line_set._in_set == True:
+            if line_set.in_set:
                 line_set.move_set(event)
 
     def rotate_set(self, event, xmin, xmax, ymin, ymax):
         for name, line_set in self._sets.items():
-            if line_set._in_set == True:
+            if line_set.in_set:
                 line_set.rotate_set(event, xmin, xmax, ymin, ymax)
 
     def cancel_any_move_points(self):
-        self._moving_point_set_name = None
+        self._moving_point_set_name = ""
         for line_set in self._sets.values():
             line_set.cancel_any_move_points()
 
@@ -712,7 +708,7 @@ class _Line_Sets(object):
             return '(no moving point)'
 
     def move_point_in_progress(self):
-        return self._moving_point_set_name is not None
+        return self._moving_point_set_name != "" # Because two different ""'s can exist at once in different memory locations.
 
     def add_point(self, event): 
         # FIX: Will add point to every line if more than one
@@ -741,7 +737,7 @@ class _Region(object):
     area, with a separately calculated fit curve.
     """
 
-    def __init__(self, id_in, ax, data_sets, ghost_sets, x_low_limit, x_high_limit, fitter,
+    def __init__(self, id_in, ax: Axes, data_sets, ghost_sets, x_low_limit, x_high_limit, fitter,
                  fitter2, is_eos_data: bool, allow_xy_move: bool, args):
         """
         :param id_in:   Region number
@@ -754,7 +750,7 @@ class _Region(object):
 
         """
         self._args = args
-        self._ax: Figure = ax
+        self._ax: Axes = ax
         self._is_eos_data: bool = is_eos_data
         self._ghost_sets = ghost_sets
 
@@ -871,7 +867,7 @@ class _Region(object):
     def begin_move_set(self, event):
         # Set edges to keep points in region
         xmin, xmax = self._line_sets.find_set_span()
-        if (xmin != None and xmax != None):
+        if xmin != None and xmax != None:
             line_set = list(self._line_sets._sets.values())[0]
             xmin_disp = line_set.movable.points_to_display_space([[xmin, 0]])[0][0]
             xmax_disp = line_set.movable.points_to_display_space([[xmax, 0]])[0][0]
@@ -962,7 +958,7 @@ class Regions(object):
     """ Manages all the regions in the plotting area.
     """
 
-    def __init__(self, ax, args, input_data_sets, xy_limits, io_manager):
+    def __init__(self, ax: Axes, args, input_data_sets, xy_limits, io_manager):
         """ Create the regions, their boundaries, their fit curve funcs,
         their fit curve plots, etc.
         The regions are ordered.  [0] is the first region, with the lowest x values.
@@ -974,7 +970,7 @@ class Regions(object):
         :param io_manager:      io.Manager
         """
         self._args = args
-        self._ax = ax
+        self._ax: Axes = ax
         self._io_manager = io_manager
         self._is_eos_data = self._io_manager.is_eos_data()
         self._allow_xy_move = not self._is_eos_data
@@ -1312,30 +1308,30 @@ class Regions(object):
                 orig_line = list(orig_line)
                 for i in range(0, len(orig_line[0])):
                     # Find start of region
-                    if ((xmin < orig_line[0][i] < xmax) and (ymin < orig_line[1][i] < ymax)):
+                    if (xmin < orig_line[0][i] < xmax) and (ymin < orig_line[1][i] < ymax):
                         start = i
                         break
                 for i in range(0, len(orig_line[0])):
                     # Find end of region
-                    if ((xmin < orig_line[0][i] < xmax) and (ymin < orig_line[1][i] < ymax)):
+                    if (xmin < orig_line[0][i] < xmax) and (ymin < orig_line[1][i] < ymax):
                         end = i
                 for i in range(0, len(orig_line[0])):
                     # Store region points in line
-                    if ((xmin < orig_line[0][i] < xmax) and (ymin < orig_line[1][i] < ymax)):
+                    if (xmin < orig_line[0][i] < xmax) and (ymin < orig_line[1][i] < ymax):
                         line[0].append(orig_line[0][i])
                         line[1].append(orig_line[1][i])
-                if (smooth_type == "trilocal"):
+                if smooth_type == "trilocal":
                     smoother = smoothers.TriLocalSmoother(self._args.numpoints, self._args.repeat)
-                elif (smooth_type == "integral"):
+                elif smooth_type == "integral":
                     smoother = smoothers.IntegralSmoother(self._args.matchpt, None, self._args.interp)
-                elif (smooth_type == "acute"):
+                elif smooth_type == "acute":
                     smoother = smoothers.AcuteAngleRepair(self._args.angle, 1)
-                elif (smooth_type == "bspline"):
+                elif smooth_type == "bspline":
                     smoother = smoothers.BSplineSmoother(5)
                 else:
                     print("Invalid smooth type")
                     return
-                if (len(line[0]) < 1):  # When regions are being used,
+                if len(line[0]) < 1:  # When regions are being used,
                     break  # if a region does not contain any points, skip it.
                 smooth_line = smoother.applySmooth(list(line[0]), list(line[1]), line[0][0], line[0][-1])
                 # Add points outside of smoothed region
@@ -1396,10 +1392,10 @@ class Regions(object):
         self._regions[self._moving_set_region_index].check_move_point()
 
         # Update adjacent regions if 1d data with fitted line
-        if (self._args.in_eos_file_base == None):
-            if (self._moving_set_region_index != 0):
+        if self._args.in_eos_file_base == None:
+            if self._moving_set_region_index != 0:
                 self._regions[self._moving_set_region_index - 1].check_move_point()
-            if (self._moving_set_region_index != len(self._regions) - 1):
+            if self._moving_set_region_index != len(self._regions) - 1:
                 self._regions[self._moving_set_region_index + 1].check_move_point()
 
         # Re-order points
@@ -1408,7 +1404,7 @@ class Regions(object):
     def cancel_move_set(self):
         """ Reset set indexes to []
         """
-        if (self._moving_set_region_index != None):
+        if self._moving_set_region_index != None:
             region = self._regions[self._moving_set_region_index]
             region.cancel_move_set()
             self._moving_set_region_index = None
@@ -1436,10 +1432,10 @@ class Regions(object):
             self._regions[self._moving_point_region_index].finish_move_point()
 
             # Update adjacent regions if 1d data with fitted line
-            if (self._args.in_eos_file_base == None):
-                if (self._moving_point_region_index != 0):
+            if self._args.in_eos_file_base == None:
+                if self._moving_point_region_index != 0:
                     self._regions[self._moving_point_region_index - 1].check_move_point()
-                if (self._moving_point_region_index != len(self._regions) - 1):
+                if self._moving_point_region_index != len(self._regions) - 1:
                     self._regions[self._moving_point_region_index + 1].check_move_point()
             self._moving_point_region_index = None
             fitter_info_window.redraw()
@@ -1482,7 +1478,7 @@ class Regions(object):
            Uses a few points on either side of region
         '''
         # Return if 2d data
-        if (self._args.in_eos_file_base != None):
+        if self._args.in_eos_file_base != None:
             return
 
         # Get changed points

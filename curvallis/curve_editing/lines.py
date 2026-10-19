@@ -312,7 +312,7 @@ class Line_Set(object):
         self._is_eos_data = is_eos_data
         self._moving_point_index = None
         self._name = name
-        self._in_set = False
+        self.in_set = False
         self._set_points = []
         self._set_index = []
         self._last_event = None
@@ -379,7 +379,7 @@ class Line_Set(object):
         i = 0
         for point in data_points:
             if xmin < point[0] < xmax and ymin < point[1] < ymax:
-                self._in_set = True
+                self.in_set = True
                 self._set_points.append(point)
                 self._set_index.append(i)
             i += 1
@@ -474,7 +474,7 @@ class Line_Set(object):
     def cancel_move_set(self):
         self._set_points = []
         self._set_index = []
-        self._in_set = False
+        self.in_set = False
         self._last_event = None
         self.sort_points_by_x()
         self.movable.set_block_select([])
