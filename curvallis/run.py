@@ -24,12 +24,11 @@ import sys
 import math
 
 import matplotlib
-from tkinter import Tk, Label, Button, Entry, Canvas
+from tkinter import Tk, Label, Button, Entry
 
-import numpy
 from matplotlib import pyplot, rcParams
 from matplotlib.axes import Axes
-from matplotlib.backend_bases import NavigationToolbar2, FigureManagerBase, FigureCanvasBase
+from matplotlib.backend_bases import NavigationToolbar2, FigureCanvasBase
 from matplotlib import widgets
 from matplotlib.figure import Figure
 
@@ -107,29 +106,39 @@ class CurveInteractor(object):
 
     def __init__(self): # This function is always called with .run() appended directly after. Should ".run()" be inlined?
         self._args = None
-        self._ax: Axes = None
-        # Used in pyplot callbacks.  Not related to background_*:
-        self._background_data_sets: io.Data_Sets = io.Data_Sets()
-        self._background_line: list[lines.Line] = []
-        self._canvas: FigureCanvasBase = None
-        self._figure: Figure = None
-        self._figure_padding = 1.08
-        self._input_data_sets = io.Data_Sets()
-        self._io_manager: io.Manager | None = None
         self._parser = None
+        # Used in pyplot callbacks.  Not related to background_*:
+        self._figure_padding = 1.08
         self._quit_pending = False
-        self._regions: regions.Regions = None
         self._xlim_callback_id = None
         self._xy_limits: io.XY_Limits = io.XY_Limits()
-        self._define_args()
         self._add_points: bool = False
+        self._define_args()
+        rcParams["keymap.quit"] = ["ctrl+w", "cmd+w"]  # Changes matplotlib's default quit keys
+        self._process_args()
+        self._io_manager: io.Manager = io.Manager(self._args)
+        # Read the data sets outside of Regions so we can discover the x, y
+        # range of the data to use for the initial GUI size:
+        self._input_data_sets: io.Data_Sets = self._io_manager.get_movable_data_sets()
+        self._background_data_sets: io.Data_Sets = self._io_manager.get_background_data_sets()
+        self._figure: Figure = pyplot.figure('Curve Editor', figsize=(12, 8))
+        self._canvas: FigureCanvasBase = self._figure.canvas
+        # One row, one column, first subplot:
+        self._ax: Axes = self._figure.add_subplot(1, 1, 1)
+        # Minimize margins:
+        self._figure.tight_layout(pad=self._figure_padding)
+
         # interactive equation plotting
         self._iplot: dict = {}
         # Disable to create own scaling funcion
         rcParams['keymap.xscale'] = ''
         rcParams['keymap.yscale'] = ''
         # Variables for block selection
-        self._selector = None
+        self._selector: widgets.RectangleSelector = widgets.RectangleSelector(self._ax, self.process_line_select,
+                                                                              useblit=True,
+                                                                              # drawtype is deprecated and is set to 'box' by default
+                                                                              button=[1, 3],  # don't use middle button
+                                                                              spancoords='pixels')
         self._find_set = False
         self._move_set = False
         self._xmin: float | int = 0
@@ -137,6 +146,32 @@ class CurveInteractor(object):
         self._ymin: float | int = 0
         self._ymax: float | int = 0
         self._last_click: list[int] | None = None
+
+        # Make axes ticks update and stay detailed
+        self._ax.minorticks_on()
+        self._ax.set_xlabel(self._args.x_label[0], fontsize=rcParams['font.size'])
+        self._ax.set_ylabel(self._args.y_label[0], fontsize=rcParams['font.size'])
+        self._ax.tick_params(axis='both', labelsize=12)
+        #        self._background_line = lines.Line(
+        #            self._ax, lines.line_attributes['background_points'])
+        self._background_line: list[lines.Line] = []
+        self._plot_background_data()
+        # Default logscale if 2d eos data
+        if self._args.in_eos_file_base:
+            self._ax.set_xscale('log')
+            self._ax.set_yscale('log')
+        # Needs self.ax set first:
+        self._set_xlim_ylim()
+        self._regions: regions.Regions = regions.Regions(
+            ax=self._ax,
+            args=self._args,
+            input_data_sets=self._input_data_sets,
+            xy_limits=self._xy_limits,
+            io_manager=self._io_manager)
+        self._register_callbacks()
+        # Create rectangle selector for selecting multiple points
+
+        self._selector.set_active(False)
 
     def _define_args(self):
         parser = configargparse.ArgumentParser(
@@ -187,54 +222,11 @@ class CurveInteractor(object):
 
         The movable line and the curve lines are in the regions.
         """
-        rcParams["keymap.quit"] = ["ctrl+w", "cmd+w"]  # Changes matplotlib's default quit keys
-        self._process_args()
-        self._io_manager: io.Manager = io.Manager(self._args)
-        # Read the data sets outside of Regions so we can discover the x, y
-        # range of the data to use for the initial GUI size:
-        self._input_data_sets = self._io_manager.get_movable_data_sets()
-        self._background_data_sets = self._io_manager.get_background_data_sets()
-        self._setup_GUI()
-        self._regions: regions.Regions = regions.Regions(
-            ax=self._ax,
-            args=self._args,
-            input_data_sets=self._input_data_sets,
-            xy_limits=self._xy_limits,
-            io_manager=self._io_manager)
-        self._register_callbacks()
-        # Create rectangle selector for selecting multiple points
-        self._selector = widgets.RectangleSelector(self._ax, self.process_line_select,
-                                                   useblit=True, # drawtype is deprecated and is set to 'box' by default
-                                                   button=[1, 3],  # don't use middle button
-                                                   spancoords='pixels')
-        self._selector.set_active(False)
+
 
         # Main routine: display all figures and block until all figures have
         # been closed:
         pyplot.show()
-
-    def _setup_GUI(self):
-        self._figure = pyplot.figure('Curve Editor', figsize=(12, 8))
-        self._canvas = self._figure.canvas
-        # One row, one column, first subplot:
-        self._ax = self._figure.add_subplot(1, 1, 1) # TODO MARKER HERE LOOK SUBPLOT STUFF WE NEED TO MODIFY THIS TO BECOME A SCATTERPLOT IF THE DATA IS 2D
-        # Minimize margins:
-        self._figure.tight_layout(pad=self._figure_padding)
-        # Make axes ticks update and stay detailed
-        self._ax.minorticks_on()
-        self._ax.set_xlabel(self._args.x_label[0], fontsize=rcParams['font.size'])
-        self._ax.set_ylabel(self._args.y_label[0], fontsize=rcParams['font.size'])
-        self._ax.tick_params(axis='both', labelsize=12)
-        #        self._background_line = lines.Line(
-        #            self._ax, lines.line_attributes['background_points'])
-        self._background_line = []
-        self._plot_background_data()
-        # Default logscale if 2d eos data
-        if self._args.in_eos_file_base:
-            self._ax.set_xscale('log')
-            self._ax.set_yscale('log')
-        # Needs self.ax set first:
-        self._set_xlim_ylim()
 
     def _process_args(self):
         def fix_negative_scientific_notation_parms():
