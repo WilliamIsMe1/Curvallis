@@ -995,6 +995,9 @@ class Regions(object):
         #        print ("regions:\n%s" % pprint.pformat(self.regions))
         self.plot_curves()
 
+    def regions(self) -> list:
+        return self._regions
+
     def calculate_fits(self):
         """ Derives a fit function for each region's subset of points
         """
@@ -1500,7 +1503,7 @@ class Regions(object):
 
             self._regions[i]._line_sets.update_ghost_points(newlist)
 
-    def _add_point(self, event):
+    def add_point(self, event):
         """
         Adds a point when left clicking
         """
@@ -1508,7 +1511,7 @@ class Regions(object):
         region = self._regions[region_index]
         region.add_point(event)
 
-    def _remove_point(self, event):
+    def remove_point(self, event):
         """
         removes a point when right clicking
         """

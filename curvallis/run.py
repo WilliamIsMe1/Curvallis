@@ -28,7 +28,7 @@ from tkinter import Tk, Label, Button, Entry
 
 from matplotlib import pyplot, rcParams
 from matplotlib.axes import Axes
-from matplotlib.backend_bases import NavigationToolbar2, FigureCanvasBase
+from matplotlib.backend_bases import NavigationToolbar2, FigureCanvasBase, MouseButton
 from matplotlib import widgets
 from matplotlib.figure import Figure
 
@@ -62,12 +62,12 @@ ZOOM_ENABLED: bool = False
 old_pan = NavigationToolbar2.pan
 
 
-def new_pan(self, *args, **kwargs):
+def new_pan(self, *args):
     global PAN_ENABLED
     global ZOOM_ENABLED
     ZOOM_ENABLED = False
     PAN_ENABLED = not PAN_ENABLED
-    old_pan(self, *args, **kwargs)
+    old_pan(self, *args)
 
 
 NavigationToolbar2.pan = new_pan
@@ -75,12 +75,12 @@ NavigationToolbar2.pan = new_pan
 old_zoom = NavigationToolbar2.zoom
 
 
-def new_zoom(self, *args, **kwargs):
+def new_zoom(self, *args):
     global ZOOM_ENABLED
     global PAN_ENABLED
     PAN_ENABLED = False
     ZOOM_ENABLED = not ZOOM_ENABLED
-    old_zoom(self, *args, **kwargs)
+    old_zoom(self, *args)
 
 
 NavigationToolbar2.zoom = new_zoom
@@ -88,9 +88,9 @@ NavigationToolbar2.zoom = new_zoom
 old_home = NavigationToolbar2.home
 
 
-def new_home(self, *args, **kwargs):
+def new_home(self, *args):
     self.push_current()
-    old_home(self, *args, **kwargs)
+    old_home(self, *args)
     self.push_current()
 
 
@@ -105,6 +105,7 @@ class CurveInteractor(object):
     # Init support =============================================================
 
     def __init__(self): # This function is always called with .run() appended directly after. Should ".run()" be inlined?
+        self._background = None
         self._args = None
         self._parser = None
         # Used in pyplot callbacks.  Not related to background_*:
@@ -133,19 +134,21 @@ class CurveInteractor(object):
         # Disable to create own scaling funcion
         rcParams['keymap.xscale'] = ''
         rcParams['keymap.yscale'] = ''
-        # Variables for block selection
+        # `button` is of the correct type, so SHUT IT PYCHARM
+        # noinspection bad-argument-type
         self._selector: widgets.RectangleSelector = widgets.RectangleSelector(self._ax, self.process_line_select,
                                                                               useblit=True,
                                                                               # drawtype is deprecated and is set to 'box' by default
-                                                                              button=[1, 3],  # don't use middle button
+                                                                              button=[MouseButton.LEFT, MouseButton.RIGHT],  # don't use middle button
                                                                               spancoords='pixels')
+        # Variables for block selection
         self._find_set = False
         self._move_set = False
         self._xmin: float | int = 0
         self._xmax: float | int = 0
         self._ymin: float | int = 0
         self._ymax: float | int = 0
-        self._last_click: list[int] | None = None
+        self._last_click: list[int] = [0, 0]
 
         # Make axes ticks update and stay detailed
         self._ax.minorticks_on()
@@ -170,9 +173,6 @@ class CurveInteractor(object):
             io_manager=self._io_manager)
         self._register_callbacks()
         # Create rectangle selector for selecting multiple points
-
-        self._selector.set_active(False)
-
     def _define_args(self):
         parser = configargparse.ArgumentParser(
             description='Curve Editor.  Fits a curve to the input data, then '
@@ -226,6 +226,7 @@ class CurveInteractor(object):
 
         # Main routine: display all figures and block until all figures have
         # been closed:
+        self._selector.set_active(False)
         pyplot.show()
 
     def _process_args(self):
@@ -346,7 +347,7 @@ class CurveInteractor(object):
         # Quit if panning or zooming
         global PAN_ENABLED
         global ZOOM_ENABLED
-        if (PAN_ENABLED or ZOOM_ENABLED):
+        if PAN_ENABLED or ZOOM_ENABLED:
             # Disable block selection while zooming or panning
             self._move_set = False
             self._find_set = False
@@ -355,21 +356,21 @@ class CurveInteractor(object):
             self._canvas.draw()
             return
 
-        if self._find_set == True:
+        if self._find_set:
             return
-        elif self._move_set == True:
+        elif self._move_set:
             if event.button == 1:
                 # Move a region of points
                 self._check_move_set(event)
             else:
                 # Rotate a region of points
                 self._check_rotate_set(event)
-        elif self._add_points == True:
+        elif self._add_points:
             # Add / Remove points
             if event.button == 1:
-                self._regions._add_point(event)
+                self._regions.add_point(event)
             else:
-                self._regions._remove_point(event)
+                self._regions.remove_point(event)
             self._draw()
             self._attempt_begin_move_point(event)
         else:
@@ -381,11 +382,11 @@ class CurveInteractor(object):
     def motion_notify_callback(self, event):
         """ On mouse movement
         """
-        if (self._move_set == True and event.button == 1):
+        if self._move_set == True and event.button == 1:
             # Move set of points
             if event.inaxes is not None:
                 self._attempt_move_set(event)
-        elif (self._move_set == True and event.button == 3):
+        elif self._move_set == True and event.button == 3:
             # Rotate set of points
             self._rotate_set(event)
         elif event.button == 1:
@@ -450,22 +451,22 @@ class CurveInteractor(object):
                     print("Option Disabled: Not a 1d Plot")
                 else:
                     self._add_points = not self._add_points
-                    if self._add_points == True:
+                    if self._add_points:
                         print("Add/Remove Mode Enabled")
                     else:
                         print("Add/Remove Mode Disabled")
             elif event.key == 'e':  # If 'e' pressed
                 # Toggle moving blocks of points
-                if self._move_set == True:
+                if self._move_set:
                     self._regions.cancel_move_set()
                     self._move_set = False
                     self._find_set = False
-                    self._last_click = None
+                    self._last_click = [-1, -1]
                     self._canvas.draw()
                     self._selector.set_active(False)
                 else:
                     self._find_set = not self._find_set
-                    if self._find_set == True:
+                    if self._find_set:
                         self._selector.set_active(True)
                         print("Block Select Enabled")
                     else:
@@ -478,21 +479,21 @@ class CurveInteractor(object):
                 self._regions.undo()
                 self._canvas.draw()
             elif event.key == 'Z':  # If 'Z' pressed
-                if self._move_set == True:  # Run TriLocal Smoothing
+                if self._move_set:  # Run TriLocal Smoothing
                     self._regions.smooth_data("trilocal", self._xmin, self._xmax,
                                               self._ymin, self._ymax)
                     self._canvas.draw()
                 else:
                     print("Select a region to smooth by pressing 'e'.")
             elif event.key == 'X':  # If 'X' pressed
-                if self._move_set == True:  # Run Integral Smoothing
+                if self._move_set:  # Run Integral Smoothing
                     self._regions.smooth_data("integral", self._xmin, self._xmax,
                                               self._ymin, self._ymax)
                     self._canvas.draw()
                 else:
                     print("Select a region to smooth by pressing 'e'.")
             elif event.key == 'V':  # If 'V' pressed
-                if self._move_set == True:  # Run Acute Repair Smoothing
+                if self._move_set:  # Run Acute Repair Smoothing
                     self._regions.smooth_data("acute", self._xmin, self._xmax,
                                               self._ymin, self._ymax)
                     self._canvas.draw()
@@ -516,7 +517,7 @@ class CurveInteractor(object):
                 self._set_xlim_ylim()
                 self._canvas.draw()
             elif event.key == 'B':  # If "B" pressed
-                if self._move_set == True:  # Run B-Spline Smoothing
+                if self._move_set:  # Run B-Spline Smoothing
                     self._regions.smooth_data("bspline", self._xmin, self._xmax, self._ymin, self._ymax)
                     self._canvas.draw()
                 else:
@@ -552,7 +553,7 @@ class CurveInteractor(object):
                 else:
                     print("Block selection is not enabled.")
 
-    def xlim_changed_callback(self, event):
+    def xlim_changed_callback(self, event: Event):
         """ xlim is changed by a zoom or a pan
 
         :param event: matplotlib.axes.Axes object
@@ -677,7 +678,7 @@ class CurveInteractor(object):
         else:
             self._regions.cancel_move_set()
             self._move_set = False
-            self._last_click = None
+            self._last_click = [-1, -1]
             self._canvas.draw()
 
     def _check_rotate_set(self, event):
@@ -723,7 +724,7 @@ class CurveInteractor(object):
         """
         Set flag to determine if graph is logscale x
         """
-        for region in self._regions._regions:
+        for region in self._regions.regions():
             for lineset in region._line_sets._sets.values():
                 lineset._logscale = not lineset._logscale
 
@@ -732,40 +733,40 @@ class CurveInteractor(object):
         Set up interface for plotting equations interactively
         """
 
-        def plot_callback(e):
+        def plot_callback(equation):
             # Button to plot equation
-            if '_' in e.get():
+            if '_' in equation.get():
                 # Underscores are a possible security risk
                 print("Underscores not allowed in equation.")
-            elif e.get() not in self._iplot:
-                self._iplot.update({e.get(): self._ax.plot([], [], '--')[0]})
+            elif equation.get() not in self._iplot:
+                self._iplot.update({equation.get(): self._ax.plot([], [], '--')[0]})
                 # Disallow changing equation until it's been deleted
-                e.configure(state='disabled')
+                equation.configure(state='disabled')
                 self._plot_icurves()
                 self._canvas.draw()
 
-        def delete_callback(e):
+        def delete_callback(equation):
             # Button to delete equation
-            if e.get() in self._iplot:
-                self._iplot[e.get()].remove()
-                self._iplot.pop(e.get(), None)
+            if equation.get() in self._iplot:
+                self._iplot[equation.get()].remove()
+                self._iplot.pop(equation.get(), None)
                 # Allow changing equation once the old one has been deleted
-                e.configure(state='normal')
+                equation.configure(state='normal')
                 self._canvas.draw()
 
-        def write_callback(e, e2):
+        def write_callback(equation, equation2):
             # Button to write file
-            if e2.get() == '':
+            if equation2.get() == '':
                 print("Cannot Write: Please specify a filename.")
             else:
                 try:
-                    io.write_point_file(e2.get(), self._iplot[e.get()].get_xydata().tolist())
+                    io.write_point_file(equation2.get(), self._iplot[equation.get()].get_xydata().tolist())
                 except:
                     print("Cannot Write: Please make sure the equation is plotted.")
 
-        def close_callback(e):
+        def close_callback(equation):
             # Delete line when closing window
-            delete_callback(e)
+            delete_callback(equation)
             textbox.destroy()
 
         # Set up Equation Plotting window
