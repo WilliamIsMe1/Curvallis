@@ -142,8 +142,8 @@ class CurveInteractor(object):
                                                                               button=[MouseButton.LEFT, MouseButton.RIGHT],  # don't use middle button
                                                                               spancoords='pixels')
         # Variables for block selection
-        self._find_set = False
-        self._move_set = False
+        self._find_set: bool = False
+        self._move_set: bool = False
         self._xmin: float | int = 0
         self._xmax: float | int = 0
         self._ymin: float | int = 0
@@ -400,6 +400,7 @@ class CurveInteractor(object):
         if self._move_set == True and event.button == 1:
             # Finish moving set
             self._finish_move_set(event)
+            print("%f, %f to %f, %f" % (self._xmin, self._ymin, self._xmax, self._ymax))
         elif self._move_set == True and event.button == 3:
             # Finish rotating set
             self._finish_rotate_set(event)
@@ -461,7 +462,7 @@ class CurveInteractor(object):
                     self._regions.cancel_move_set()
                     self._move_set = False
                     self._find_set = False
-                    self._last_click = [-1, -1]
+                    self._last_click = []
                     self._canvas.draw()
                     self._selector.set_active(False)
                 else:
@@ -582,6 +583,8 @@ class CurveInteractor(object):
                                       self._ymax, eclick.x, eclick.y)
         self._canvas.draw()
 
+    # This inspection here is unimportant for the callbacks. Maybe I can fix it but rn it's dumb.
+    # noinspection bad-argument-type
     def _register_callbacks(self):
         self._canvas.mpl_connect('draw_event', self.draw_callback)
         self._canvas.mpl_connect('button_press_event', self.button_press_callback)
@@ -692,7 +695,7 @@ class CurveInteractor(object):
         """
         rotate set
         """
-        if self._regions._moving_set_region_index != None:
+        if self._regions.get_moving_set_region_index() is not None:
             self._regions.rotate_set(event, self._xmin, self._xmax, self._ymin, self._ymax)
             self._draw()
 
@@ -707,7 +710,7 @@ class CurveInteractor(object):
         """
         Prepare to move set.
         """
-        if self._regions._moving_set_region_index != None:
+        if self._regions.get_moving_set_region_index() is not None:
             self._regions.move_set(event)
             self._draw()
 

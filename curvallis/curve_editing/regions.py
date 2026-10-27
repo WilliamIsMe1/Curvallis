@@ -1184,6 +1184,9 @@ class Regions(object):
     def get_regions(self):
         return self._regions
 
+    def get_moving_set_region_index(self):
+        return self._moving_set_region_index
+
     def plot_curves(self):
         """ Plots a fit curve for each region. Called by xlim_callback
         """
