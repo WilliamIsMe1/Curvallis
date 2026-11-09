@@ -984,7 +984,7 @@ class Regions(object):
         self._x_min = xy_limits.x_min
         self._fitter = args.fit_type
         self._fitter2 = args.refine_fit
-        if self._args.region_bound != None:
+        if self._args.region_bound is not None:
             region_count = len(self._args.region_bound[0]) + 1
         else:
             region_count = 1
@@ -1307,9 +1307,7 @@ class Regions(object):
         for region in self._regions:
             for line_set in region._line_sets._sets.values():
                 orig_line = line_set.movable.get_x_data_y_data()
-                line = []
-                line.append([])
-                line.append([])
+                line = [[], []]
                 # Only alter points in region
                 orig_line = list(orig_line)
                 for i in range(0, len(orig_line[0])):
@@ -1531,7 +1529,7 @@ class Regions(object):
         """
         event.x = (xmin + xmax) / 2
         event.y = (ymin + ymax) / 2
-        region_index = self.get_region_index(event.x, event.y)
+        region_index = self.get_region_index(event.x, event.y) # MARKER Potential problem across regions?
         region: _Region = self._regions[region_index]
         region.remove_points(event, xmin, xmax, ymin, ymax)
         # Redraw fit curve

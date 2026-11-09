@@ -565,9 +565,10 @@ class Line_Set(object):
         else:
             return
 
-    def remove_points(self, event: KeyEvent, xmin, xmax, ymin, ymax): # Function fixed now
+    def remove_points(self, event: KeyEvent, xmin, xmax, ymin, ymax):
 
-        data_points = self.movable.get_xy_data()
+        data_points: list[list[float]] = self.movable.get_xy_data()
+
         display_points = self.movable.points_to_display_space(data_points)
         x_values, y_values = display_points[:,0], display_points[:,1] # These variables are unused; should they be removed?
         remove_points_indices = [] # Safe way to remove items during a loop iterating through said items
