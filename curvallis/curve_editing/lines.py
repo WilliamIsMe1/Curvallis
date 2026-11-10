@@ -566,20 +566,17 @@ class Line_Set(object):
             return
 
     def remove_points(self, event: KeyEvent, xmin, xmax, ymin, ymax):
-
         data_points: list[list[float]] = self.movable.get_xy_data()
 
         display_points = self.movable.points_to_display_space(data_points)
         x_values, y_values = display_points[:,0], display_points[:,1] # These variables are unused; should they be removed?
-        remove_points_indices = [] # Safe way to remove items during a loop iterating through said items
+        remove_points = []
 
-        for i in range(len(display_points)):
-            if (xmin <= data_points[i][0] <= xmax) and (ymin <= data_points[i][1] <= ymax):
-                remove_points_indices.append(i)
-            elif xmin <= data_points[i][0] <= xmax:
-                pass # printout comment used to be here.
-        for i in range(len(remove_points_indices)-1, -1, -1): # Change the middle parameter to -1 so that the "upper limit " is zero inclusive. Why did it count backwards??
-            data_points.remove(data_points[remove_points_indices[i]])
+        for point in data_points:
+            if (xmin <= point[0] <= xmax) and (ymin <= point[1] <= ymax):
+                remove_points.append(point)
+        for i in range(len(remove_points)):
+            data_points.remove(remove_points[i])
         self.movable.set_xy_data(data_points)
 
         

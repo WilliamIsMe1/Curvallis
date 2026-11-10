@@ -1162,7 +1162,7 @@ class Regions(object):
                 result.add_or_append_to_set(name, region_data_set)
         return result
 
-    def get_region_index(self, display_x, display_y):
+    def get_region_index(self, display_x, display_y): # TODO Why is the region index dependent on the constantly changing display space?
         """ Given a point in display space, return the index of the region it
          is in.
 
@@ -1527,8 +1527,9 @@ class Regions(object):
         """
         removes a group of points when pressing delete
         """
-        event.x = (xmin + xmax) / 2
-        event.y = (ymin + ymax) / 2
+        event.x = (xmin + xmax) / 2 # xmin and xmax in graph space while event.x expects screen space
+        event.y = (ymin + ymax) / 2 # ymin and ymax in graph space while event.y expects screen space
+
         region_index = self.get_region_index(event.x, event.y) # MARKER Potential problem across regions?
         region: _Region = self._regions[region_index]
         region.remove_points(event, xmin, xmax, ymin, ymax)
