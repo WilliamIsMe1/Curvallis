@@ -566,20 +566,20 @@ class Line_Set(object):
             return
 
     def remove_points(self, event: KeyEvent, xmin, xmax, ymin, ymax):
-        data_points: list[list[float]] = self.movable.get_xy_data()
+        data_points = self.movable.get_xy_data()
 
-        display_points = self.movable.points_to_display_space(data_points)
-        x_values, y_values = display_points[:,0], display_points[:,1] # These variables are unused; should they be removed?
-        remove_points = []
+        print("X range:", min(p[0] for p in data_points), max(p[0] for p in data_points))
+        print("Y range:", min(p[1] for p in data_points), max(p[1] for p in data_points))
 
-        for point in data_points:
-            if (xmin <= point[0] <= xmax) and (ymin <= point[1] <= ymax):
-                remove_points.append(point)
-        for i in range(len(remove_points)):
-            data_points.remove(remove_points[i])
-        self.movable.set_xy_data(data_points)
+        print("First 5 points:", data_points[:5])
 
-        
+        remaining_points = [ # This will be more reliable
+            point for point in data_points
+            if not (xmin <= point[0] <= xmax and
+                    ymin <= point[1] <= ymax)
+        ]
+
+        self.movable.set_xy_data(remaining_points)
 
 
     # END Point movement #######################################################
