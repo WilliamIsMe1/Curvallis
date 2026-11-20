@@ -1530,8 +1530,8 @@ class Regions(object):
         event.x = (xmin + xmax) / 2 # xmin and xmax in graph space while event.x expects screen space
         event.y = (ymin + ymax) / 2 # ymin and ymax in graph space while event.y expects screen space
 
-        region_index = self.get_region_index(event.x, event.y) # MARKER Potential problem across regions?
-        region: _Region = self._regions[region_index]
+        region_index = self.get_region_index(event.x, event.y) # Only one region apparently, so this is useless.
+        region: _Region = self._regions[region_index] # So far as we know, always self._regions[0]
         region.remove_points(event, xmin, xmax, ymin, ymax)
         # Redraw fit curve
         self._moving_set_region_index = region_index

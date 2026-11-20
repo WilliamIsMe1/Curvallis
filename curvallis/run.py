@@ -148,7 +148,7 @@ class CurveInteractor(object):
         self._xmax: float | int = 0
         self._ymin: float | int = 0
         self._ymax: float | int = 0
-        self._last_click: list[int] = [0, 0]
+        self._last_click: list[float] = [0, 0]
 
         # Make axes ticks update and stay detailed
         self._ax.minorticks_on()
