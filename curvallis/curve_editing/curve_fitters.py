@@ -1910,6 +1910,57 @@ class Shankar(Pressure_Fit_Class):
 
 factory.register('shank', Shankar)
 
+class ThomasFermiPressureLimit(Pressure_Fit_Class):
+    """
+    Thomas–Fermi high-pressure limiting form
+    P = a * rho**(5/3) * exp(b * rho**(1/3))
+    """
+
+    def __init__(self, args, name):
+        super(ThomasFermiPressureLimit, self).__init__(args, name)
+        self.a = args.a
+        self.b = args.b
+        self.rho0 = args.rho0 if args.rho0 is not None else 1.0
+
+    def _set_coefficients(self, coeffs):
+        (self.a, self.b, self.rho0) = coeffs
+
+    def _get_coefficients(self):
+        return self.a, self.b, self.rho0
+
+    def _print_coefficients(self):
+        print("a = {:20.20f};".format(self.a))
+        print("b = {:20.20f};".format(self.b))
+        print("rho0 = {:20.20f};".format(self.rho0))
+        update_fitter_info_window(
+            -1, False,
+            ("a = {:20.20f};\n".format(self.a)) +
+            ("b = {:20.20f};\n".format(self.b)) +
+            ("rho0 = {:20.20f};".format(self.rho0))
+        )
+
+    @staticmethod
+    def _f(x, *coeffs):
+        (a, b, rho0) = coeffs
+        return a * np.power(x, 5.0/3.0) * np.exp(b * np.power(x, 1.0/3.0))
+
+    def _derivative(self, x):
+        # ChatGPT suggested this
+        u = np.power(x, 1.0/3.0)
+        return (self.a / 3.0) * np.exp(self.b * u) * (u**2) * (5.0 + self.b * u)
+
+    def _second_derivative(self, x):
+        raise RuntimeError("NOT YET IMPLEMENTED")
+
+    def _energy_integral(self, x):
+        raise RuntimeError("NOT YET IMPLEMENTED")
+
+    def _pressure_integral(self, x):
+        raise RuntimeError("NOT YET IMPLEMENTED")
+
+
+factory.register('tfpl', ThomasFermiPressureLimit)
+
 
 # ------------------------------------------------------------------------------
 # Incomplete EOS models
